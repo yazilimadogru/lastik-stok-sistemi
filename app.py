@@ -31,6 +31,7 @@ LOG_DIR.mkdir(exist_ok=True)
 PRICE_IMPORT_DIR.mkdir(exist_ok=True)
 
 file_lock = threading.Lock()
+_DB_MISSING = object()
 
 
 # ==========================================================================
@@ -43,14 +44,21 @@ USE_SQLITE = os.environ.get("USE_SQLITE", "1") != "0"
 
 
 def db_baglanti():
-    conn = sqlite3.connect(DB_FILE)
+    """SQLite bağlantısı.
+
+    WAL modu, stok programı aynı anda birkaç cihazdan kullanıldığında
+    okuma/yazma çakışmalarını JSON dosyasına göre çok daha güvenli hale getirir.
+    """
+    conn = sqlite3.connect(DB_FILE, timeout=30)
     conn.row_factory = sqlite3.Row
-    conn.execute("CREATE TABLE IF NOT EXISTS kv_store (anahtar TEXT PRIMARY KEY, veri TEXT NOT NULL)")
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA synchronous=NORMAL")
+    conn.execute("PRAGMA busy_timeout=30000")
+    conn.execute("CREATE TABLE IF NOT EXISTS kv_store (anahtar TEXT PRIMARY KEY, veri TEXT NOT NULL, guncelleme TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)")
     return conn
 
 
-def db_getir(anahtar, varsayilan=None):
-    varsayilan = [] if varsayilan is None else varsayilan
+def db_getir(anahtar, varsayilan=_DB_MISSING):
     if not USE_SQLITE:
         return varsayilan
     with db_baglanti() as conn:
@@ -60,6 +68,7 @@ def db_getir(anahtar, varsayilan=None):
     try:
         return json.loads(row["veri"])
     except Exception:
+        log_yaz(f"SQLite içindeki {anahtar} verisi okunamadı; JSON yedeği deneniyor.")
         return varsayilan
 
 
@@ -68,8 +77,8 @@ def db_yaz(anahtar, veri):
         return
     with db_baglanti() as conn:
         conn.execute(
-            "INSERT INTO kv_store (anahtar, veri) VALUES (?, ?) "
-            "ON CONFLICT(anahtar) DO UPDATE SET veri=excluded.veri",
+            "INSERT INTO kv_store (anahtar, veri, guncelleme) VALUES (?, ?, CURRENT_TIMESTAMP) "
+            "ON CONFLICT(anahtar) DO UPDATE SET veri=excluded.veri, guncelleme=CURRENT_TIMESTAMP",
             (anahtar, json.dumps(veri, ensure_ascii=False, indent=2))
         )
 
@@ -94,21 +103,36 @@ def json_guvenli_yaz(dosya, veri):
 
 
 def sqlite_ilk_aktarim():
-    """Mevcut JSON verilerini ilk çalıştırmada SQLite içine taşır."""
+    """Mevcut JSON verilerini SQLite içine taşır.
+
+    Eski JSON dosyaları silinmez; geçiş öncesi yedekleri alınır ve
+    SQLite ana kaynak, JSON ise okunabilir güvenlik kopyası olarak kalır.
+    """
     if not USE_SQLITE:
         return
     try:
-        with db_baglanti() as conn:
-            mevcut = conn.execute("SELECT COUNT(*) AS sayi FROM kv_store").fetchone()["sayi"]
-        if mevcut:
-            return
-        if STOK_FILE.exists():
-            db_yaz("stok", json_guvenli_oku(STOK_FILE, "stok"))
-        if SATIS_FILE.exists():
-            db_yaz("cikis_fisleri", json_guvenli_oku(SATIS_FILE, "cikis_fisleri"))
-        if HAREKET_FILE.exists():
-            db_yaz("stok_hareketleri", json_guvenli_oku(HAREKET_FILE, "stok_hareketleri"))
-        log_yaz("SQLite ilk veri aktarımı tamamlandı.")
+        # Geçiş öncesi JSON dosyalarını ayrıca sakla.
+        zaman = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+        for dosya in [STOK_FILE, SATIS_FILE, HAREKET_FILE]:
+            if dosya.exists():
+                hedef = BACKUP_DIR / f"gecis_oncesi_{dosya.stem}_{zaman}.json"
+                if not hedef.exists():
+                    shutil.copy2(dosya, hedef)
+
+        kaynaklar = {
+            "stok": (STOK_FILE, "stok"),
+            "cikis_fisleri": (SATIS_FILE, "cikis_fisleri"),
+            "stok_hareketleri": (HAREKET_FILE, "stok_hareketleri"),
+        }
+        aktarilan = []
+        for anahtar, (dosya, onek) in kaynaklar.items():
+            mevcut = db_getir(anahtar, _DB_MISSING)
+            if mevcut is _DB_MISSING:
+                veri = json_guvenli_oku(dosya, onek) if dosya.exists() else []
+                db_yaz(anahtar, veri)
+                aktarilan.append(anahtar)
+        if aktarilan:
+            log_yaz("SQLite veri aktarımı tamamlandı: " + ", ".join(aktarilan))
     except Exception as e:
         log_yaz(f"SQLite ilk aktarım hatası: {e}")
 
@@ -199,8 +223,8 @@ def log_yaz(mesaj):
 
 def stok_oku():
     if USE_SQLITE:
-        veri = db_getir("stok", None)
-        if veri is not None:
+        veri = db_getir("stok", _DB_MISSING)
+        if veri is not _DB_MISSING:
             return veri
     veri = json_guvenli_oku(STOK_FILE, "stok")
     if USE_SQLITE:
@@ -217,8 +241,8 @@ def stok_yaz(veri):
 
 def satis_oku():
     if USE_SQLITE:
-        veri = db_getir("cikis_fisleri", None)
-        if veri is not None:
+        veri = db_getir("cikis_fisleri", _DB_MISSING)
+        if veri is not _DB_MISSING:
             return veri
     veri = json_guvenli_oku(SATIS_FILE, "cikis_fisleri")
     if USE_SQLITE:
@@ -235,8 +259,8 @@ def satis_yaz(veri):
 
 def hareket_oku():
     if USE_SQLITE:
-        veri = db_getir("stok_hareketleri", None)
-        if veri is not None:
+        veri = db_getir("stok_hareketleri", _DB_MISSING)
+        if veri is not _DB_MISSING:
             return veri
     veri = json_guvenli_oku(HAREKET_FILE, "stok_hareketleri")
     if USE_SQLITE:
@@ -1543,6 +1567,29 @@ def api_cikis_fisi_sil(fis_id):
     satis_yaz(yeni_fisler)
     log_yaz(f"Çıkış fişi silindi: Fiş No={fis.get('fis_no')}")
     return jsonify({'ok': True})
+
+
+@app.route('/api/veri-durumu', methods=['GET'])
+def api_veri_durumu():
+    """Basit sağlık kontrolü: SQLite/JSON dosyalarının durumunu gösterir."""
+    try:
+        stok_sayisi = len(stok_oku())
+        fis_sayisi = len(satis_oku())
+        hareket_sayisi = len(hareket_oku())
+        db_var = DB_FILE.exists()
+        db_boyut = DB_FILE.stat().st_size if db_var else 0
+        return jsonify({
+            'ok': True,
+            'veri_kaynagi': 'SQLite aktif, JSON güvenlik kopyası' if USE_SQLITE else 'JSON',
+            'sqlite_dosyasi': str(DB_FILE),
+            'sqlite_var': db_var,
+            'sqlite_boyut': db_boyut,
+            'stok_sayisi': stok_sayisi,
+            'cikis_fisi_sayisi': fis_sayisi,
+            'hareket_sayisi': hareket_sayisi
+        })
+    except Exception as e:
+        return jsonify({'ok': False, 'hata': str(e)}), 500
 
 
 if __name__ == '__main__':

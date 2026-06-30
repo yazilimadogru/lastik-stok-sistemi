@@ -1,0 +1,25 @@
+SQLite Geçiş Notu - v33
+
+Bu sürümde veri katmanı güçlendirildi.
+
+1) Ana veri kaynağı SQLite olacak:
+   data/lastik_stok.db
+
+2) JSON dosyaları silinmedi:
+   data/stok.json
+   data/cikis_fisleri.json
+   data/stok_hareketleri.json
+
+3) JSON dosyaları güvenlik kopyası olarak tutulmaya devam eder.
+   Yani geçişte eski veriler çöpe atılmaz.
+
+4) Program ilk açılışta JSON verilerini SQLite içine aktarır.
+   Aktarım öncesi JSON dosyalarının kopyası data/yedekler içine alınır.
+
+5) Her yazma işleminde SQLite güncellenir, JSON dosyaları da okunabilir yedek olarak güncellenir.
+
+6) Kontrol için tarayıcıda şu API kullanılabilir:
+   http://127.0.0.1:5000/api/veri-durumu
+
+Babaya kısa açıklama:
+Eski kayıtları silmeden daha güvenli bir veritabanına kopyaladık. JSON defteri hâlâ yedek olarak duruyor. Program işlem yaparken SQLite kullanıyor; bir sorun olursa JSON ve yedeklerden geri dönülebilir.
