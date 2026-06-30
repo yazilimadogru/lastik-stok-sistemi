@@ -1,0 +1,17 @@
+1) Bu klasörü güvenli bir yere çıkar.
+2) İlk defa çalıştırmadan önce: pip install -r requirements.txt
+3) Webden Continental fiyat okuma denemesi için ayrıca: python -m  install chromium
+4) baslat.bat dosyasına çift tıkla.
+5) Tarayıcıdan aç: http://127.0.0.1:5000
+6) Fiyat Listesi ekranında PDF okuyabilir veya  denemesi yapabilirsin.
+7) Şifre uygulama dosyasına kaydedilmez; sadece işlem sırasında kullanılır.
+8) Stok verisi data/stok.json içindedir. Yedekler data/yedekler klasörüne düşer.
+
+
+CONTINENTAL WEBDEN FİYAT OKUMA:
+1) İlk kurulumda:
+   pip install -r requirements.txt
+   python -m  install chromium
+2) Fiyat Listesi ekranında PDF seçersen, ürün kodları PDF'den alınır.
+3) Kullanıcı adı/şifre girip "" dediğinde site açılır, kodlar tek tek aranır.
+5) Şifre dosyaya kaydedilmez.

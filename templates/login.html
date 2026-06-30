@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yönetici Girişi</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <div class="login-wrapper">
+        <div class="login-container">
+            <img src="{{ url_for('static', filename='fotolar/logo.png') }}" alt="Dervişoğlu Otomotiv" class="login-logo">
+            <h2>Yönetici Girişi</h2>
+            <p class="login-subtitle">Lütfen panel bilgilerinizi giriniz.</p>
+            
+            <form id="loginForm">
+                <div class="input-group">
+                    <input type="text" id="username" placeholder="Kullanıcı Adı" required autocomplete="off">
+                </div>
+                <div class="input-group">
+                    <input type="password" id="password" placeholder="Şifre" required>
+                </div>
+                <button type="submit">Giriş Yap</button>
+            </form>
+            
+            <p id="error-msg" style="color: #B23A3A; font-size: 14px; margin-top: 15px; font-weight: 500;"></p>
+        </div>
+    </div>
+
+    <script>
+        // Not: Bu kontrol tarayıcı tarafında çalışır, sayfa kaynağında düz metin
+        // olarak görünmemesi için kullanıcı adı/şifre hash'lenerek karşılaştırılır.
+        // Bu, ekrana bakanın şifreyi göremesi içindir; gerçek bir sunucu güvenliği
+        // sağlamaz (örn. tarayıcı geliştirici konsolunda yine atlatılabilir).
+        async function sha256Hex(text) {
+            const data = new TextEncoder().encode(text);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        const KADI_HASH = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918';
+        const SIFRE_HASH = '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4';
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const kadi = document.getElementById('username').value.trim();
+            const sifre = document.getElementById('password').value.trim();
+            const hataMesaji = document.getElementById('error-msg');
+
+            const [kadiHash, sifreHash] = await Promise.all([sha256Hex(kadi), sha256Hex(sifre)]);
+
+            if (kadiHash === KADI_HASH && sifreHash === SIFRE_HASH) {
+                window.location.href = '{{ url_for('stok') }}';
+            } else {
+                hataMesaji.textContent = 'Kullanıcı adı veya şifre hatalı!';
+            }
+        });
+    </script>
+
+</body>
+</html>

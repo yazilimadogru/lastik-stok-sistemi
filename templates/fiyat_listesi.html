@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fiyat Listesi Aktarma</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="stok-container-fluid price-import-page">
+    <div class="stok-header">
+        <div class="stok-logo-box">
+            <img src="{{ url_for('static', filename='fotolar/logo.png') }}" class="stok-logo" alt="Dervişoğlu Otomotiv Logo">
+        </div>
+        <div class="header-actions">
+            <a href="{{ url_for('stok') }}" class="header-slip-btn">Stok Paneli</a>
+            <a href="{{ url_for('cikis_fisi') }}" class="header-slip-btn">Çıkış Fişi</a>
+        </div>
+    </div>
+
+    <div class="price-import-wrapper">
+        <div class="price-import-title">
+            <div>
+                <h1>PDF Fiyat Listesi Aktarma</h1>
+                <p>PDF fiyat listesini seç, ürünleri kontrol et, miktarları gir ve stoka işle.</p>
+            </div>
+        </div>
+
+        <div class="price-import-card">
+            <div class="price-upload-row">
+                <div class="price-file-area">
+                    <label>PDF Fiyat Listesi</label>
+                    <input type="file" id="pdfInput" accept="application/pdf">
+                </div>
+                <button type="button" class="price-read-btn" onclick="pdfOku()">PDF Oku</button>
+            </div>
+
+            <div class="price-info-row" id="priceInfoRow">
+                <div class="price-stat">
+                    <span>Toplam</span>
+                    <strong id="statToplam">0</strong>
+                </div>
+                <div class="price-stat update">
+                    <span>Güncellenecek</span>
+                    <strong id="statGuncel">0</strong>
+                </div>
+                <div class="price-stat new">
+                    <span>Yeni</span>
+                    <strong id="statYeni">0</strong>
+                </div>
+                <div class="price-stat same">
+                    <span>Aynı</span>
+                    <strong id="statAyni">0</strong>
+                </div>
+            </div>
+
+            <div class="price-action-row">
+                <label class="price-check">
+                    <input type="checkbox" id="yeniUrunEkleCheck" checked>
+                    Yeni bulunan ürünleri stoka ekle
+                </label>
+                <button type="button" class="price-apply-btn" id="applyBtn" onclick="fiyatlariUygula()" disabled>Fiyatları ve Miktarları Uygula</button>
+            </div>
+
+            <p id="priceStatus" class="price-status">PDF seçip “PDF Oku” butonuna bas.</p>
+        </div>
+
+        <div class="price-preview-wrap">
+            <table class="excel-table price-preview-table" id="pricePreviewTable">
+                <thead>
+                    <tr>
+                        <th>Durum</th>
+                        <th>Marka</th>
+                        <th class="center-col">Kod</th>
+                        <th>Ürün</th>
+                        <th class="center-col">Ebat</th>
+                        <th class="center-col">Mevsim</th>
+                        <th class="center-col">Miktar</th>
+                        <th class="right-col">Eski Fiyat</th>
+                        <th class="right-col">Yeni Fiyat</th>
+                        <th>Notlar</th>
+                    </tr>
+                </thead>
+                <tbody id="pricePreviewBody">
+                    <tr><td colspan="10" class="center-col">Henüz PDF okunmadı.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+let aktifToken = null;
+let sonKayitlar = [];
+
+function formatTL(num) {
+    const n = Number(num || 0);
+    return n.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' TL';
+}
+
+function durumEtiketi(durum) {
+    if (durum === 'guncellenecek') return '<span class="price-status-badge badge-update">Güncellenecek</span>';
+    if (durum === 'yeni') return '<span class="price-status-badge badge-new">Yeni</span>';
+    return '<span class="price-status-badge badge-same">Aynı</span>';
+}
+
+function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, function (m) {
+        return ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;'})[m];
+    });
+}
+
+function miktarInputHtml(item) {
+    const kod = escapeHtml(item.kod || '');
+    const value = item.miktar_value === null || item.miktar_value === undefined ? '' : String(item.miktar_value);
+    const placeholder = value === '' ? '-' : '';
+    return `
+        <input
+            type="number"
+            min="0"
+            class="price-qty-input"
+            data-code="${kod}"
+            value="${escapeHtml(value)}"
+            placeholder="${placeholder}"
+            title="Bu ürünün stok miktarı"
+        >
+    `;
+}
+
+function onizlemeCiz(kayitlar) {
+    const tbody = document.getElementById('pricePreviewBody');
+    tbody.innerHTML = '';
+
+    if (!kayitlar || kayitlar.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" class="center-col">PDF içinde okunabilir ürün bulunamadı.</td></tr>';
+        return;
+    }
+
+    kayitlar.forEach(item => {
+        const yeniFiyat = Number(item.fiyat ?? item.fiyat_liste ?? 0);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${durumEtiketi(item.durum)}</td>
+            <td>${escapeHtml(item.marka)}</td>
+            <td class="center-col">${escapeHtml(item.kod)}</td>
+            <td>${escapeHtml(item.desen)}</td>
+            <td class="center-col">${escapeHtml(item.ebat)}</td>
+            <td class="center-col">${escapeHtml(item.mevsim)}</td>
+            <td class="center-col">${miktarInputHtml(item)}</td>
+            <td class="right-col">${escapeHtml(item.eski_fiyat_text)}</td>
+            <td class="right-col">${formatTL(yeniFiyat)}</td>
+            <td>${escapeHtml(item.notlar || '')}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function pdfOku() {
+    const input = document.getElementById('pdfInput');
+    const status = document.getElementById('priceStatus');
+    const applyBtn = document.getElementById('applyBtn');
+
+    if (!input.files || !input.files[0]) {
+        alert('Önce PDF dosyası seç.');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('pdf', input.files[0]);
+
+    aktifToken = null;
+    applyBtn.disabled = true;
+    status.textContent = 'PDF okunuyor...';
+    status.style.color = '#55524C';
+
+    fetch('/api/fiyat-listesi/oku', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (!data.ok) throw new Error(data.hata || 'PDF okunamadı.');
+
+        aktifToken = data.token;
+        applyBtn.disabled = false;
+
+        document.getElementById('statToplam').textContent = data.toplam || 0;
+        document.getElementById('statGuncel').textContent = data.sayac?.guncellenecek || 0;
+        document.getElementById('statYeni').textContent = data.sayac?.yeni || 0;
+        document.getElementById('statAyni').textContent = data.sayac?.ayni || 0;
+
+        sonKayitlar = data.kayitlar || [];
+        onizlemeCiz(sonKayitlar);
+
+        status.textContent = 'Ön izleme hazır. Miktarları kontrol edip “Fiyatları ve Miktarları Uygula” butonuna basabilirsin.';
+        status.style.color = '#2E7D4F';
+    })
+    .catch(err => {
+        status.textContent = err.message;
+        status.style.color = '#B23A3A';
+        alert(err.message);
+    });
+}
+
+function fiyatlariUygula() {
+    const status = document.getElementById('priceStatus');
+    if (!aktifToken) {
+        alert('Önce PDF oku.');
+        return;
+    }
+
+    const miktarlar = {};
+    document.querySelectorAll('.price-qty-input').forEach(input => {
+        const kod = input.dataset.code || '';
+        if (kod && input.value !== '') miktarlar[kod] = input.value;
+    });
+
+    const body = {
+        token: aktifToken,
+        yeni_urun_ekle: document.getElementById('yeniUrunEkleCheck').checked,
+        miktarlar
+    };
+
+    status.textContent = 'Fiyatlar ve miktarlar uygulanıyor...';
+    status.style.color = '#55524C';
+
+    fetch('/api/fiyat-listesi/uygula', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (!data.ok) throw new Error(data.hata || 'Uygulama başarısız.');
+        const s = data.sayac || {};
+        status.textContent = `Tamamlandı. Güncellendi: ${s.guncellendi || 0}, Eklendi: ${s.eklendi || 0}, Aynı: ${s.ayni || 0}, Miktar değişen: ${s.miktar_guncellendi || 0}`;
+        status.style.color = '#2E7D4F';
+        alert('Fiyatlar ve miktarlar uygulandı.');
+    })
+    .catch(err => {
+        status.textContent = err.message;
+        status.style.color = '#B23A3A';
+        alert(err.message);
+    });
+}
+</script>
+</body>
+</html>

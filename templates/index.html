@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dervişoğlu Otomotiv - Ana Sayfa</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="logo-area">
+            <img src="{{ url_for('static', filename='fotolar/logo.png') }}" alt="Dervişoğlu Otomotiv Logo" class="site-logo">
+        </div>
+        <a href="{{ url_for('login') }}" class="login-btn">Yönetici Girişi</a>
+    </div>
+
+    <div class="content">
+        <span class="content-eyebrow">Lastik Stok ve Satış Takibi</span>
+        <h1>Dervişoğlu Otomotiv</h1>
+        <p class="content-sub">Stok, çıkış fişi ve fiyat listesi yönetimi için panele yönetici girişi yapın.</p>
+    </div>
+
+</body>
+</html>

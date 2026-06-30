@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Çıkış Fişi</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="stok-container-fluid slip-page">
+        <div class="stok-header">
+            <div class="stok-logo-box">
+                <img src="{{ url_for('static', filename='fotolar/logo.png') }}" class="stok-logo" alt="Dervişoğlu Otomotiv Logo">
+            </div>
+            <div class="header-actions">
+                <a href="{{ url_for('stok') }}" class="header-slip-btn">Stok Paneli</a>
+                <a href="{{ url_for('index') }}" class="header-back-btn logout-btn" onclick="return guvenliCikis(this)">Çıkış Yap</a>
+            </div>
+        </div>
+
+        <div class="slip-wrapper simple-slip-wrapper">
+            <div class="slip-title-row">
+                <div>
+                    <h1>Çıkış Fişi</h1>
+                    <p>Ebat veya kod yaz, alttaki listeden ürünü seç, adet gir ve fişi kaydet. Tarih kayıt anında otomatik yazılır.</p>
+                </div>
+                <div class="slip-no-card">
+                    <span>Sıra No</span>
+                    <strong id="nextSlipNo">Otomatik</strong>
+                </div>
+            </div>
+
+            <div class="slip-search-box">
+                <label>Ürün Ara</label>
+                <input type="text" id="urunAramaInput" placeholder="Ebat veya kod yaz: örn 2055516, 205/55 R16, 313035" autocomplete="off">
+                <small>Arama sonucundan ürüne tıkla. Seçilen ürün aşağıya otomatik dolacak.</small>
+            </div>
+
+            <div class="slip-table-wrap result-wrap">
+                <table class="excel-table result-table" id="resultTable">
+                    <thead>
+                        <tr>
+                            <th>Marka</th>
+                            <th class="center-col">Kod</th>
+                            <th>Desen</th>
+                            <th class="center-col">Ebat</th>
+                            <th class="center-col">Mevsim</th>
+                            <th class="center-col">Yıl</th>
+                            <th>Depo</th>
+                            <th class="center-col">Stok</th>
+                            <th class="right-col">Fiyat</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultBody">
+                        <tr><td colspan="9" class="center-col">Ebat veya kod yazarak ürün ara.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="selected-sale-card" id="selectedSaleCard">
+                <div class="selected-sale-title">Seçilen Ürün</div>
+                <div class="selected-sale-product" id="selectedProductText">Henüz ürün seçilmedi.</div>
+
+                <div class="selected-sale-meta-grid customer-row-only">
+                    <div class="slip-field customer-field-wide">
+                        <label>Sayın / Müşteri</label>
+                        <input type="text" id="musteriInput" placeholder="Müşteri adı veya firma">
+                    </div>
+                </div>
+
+                <div class="selected-sale-form sale-form-with-date">
+                    <div class="slip-field">
+                        <label>Adet</label>
+                        <input type="number" id="adetInput" class="center-col no-spin" min="1" value="1">
+                        <label class="slip-check-row stock-reflect-under-qty">
+                            <input type="checkbox" id="stokYansitInput" checked>
+                            <span>Stoğa yansıt</span>
+                        </label>
+                    </div>
+                    <div class="slip-field">
+                        <label>Satış Fiyatı</label>
+                        <input type="text" id="fiyatInput" class="right-col" placeholder="Önce ürün seç">
+                    </div>
+                    <div class="slip-field">
+                        <label>Toplam Tutar</label>
+                        <input type="text" id="toplamTutarInput" class="right-col" placeholder="Önce ürün ve adet gir">
+                    </div>
+                    <div class="date-time-stack compact-date-time">
+                        <div class="slip-field">
+                            <label>Kayıt Tarihi</label>
+                            <input type="text" id="kayitTarihInput" placeholder="Otomatik | Örn: 27.06" maxlength="10" inputmode="numeric">
+                        </div>
+                        <div class="slip-field">
+                            <label>Kayıt Saati</label>
+                            <input type="text" id="kayitSaatInput" placeholder="Otomatik | Örn: 17:12" maxlength="5" inputmode="numeric">
+                        </div>
+                    </div>
+                    <div class="slip-field selected-note-field note-field-right">
+                        <label>Açıklama</label>
+                        <textarea id="satirAciklamaInput" rows="3" placeholder="Örn: Peşin, takıldı, beklemede..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="slip-actions simple-slip-actions">
+                <button type="button" class="btn-cancel" onclick="formuTemizle()">Temizle</button>
+                <button type="button" class="btn-submit" id="fisKaydetBtn" onclick="cikisFisiKaydet()">Fişi Kaydet ✔</button>
+            </div>
+
+            <p id="slipMsg" class="slip-msg"></p>
+        </div>
+
+        <div class="slip-history-wrapper">
+            <div class="sales-history-head">
+                <div>
+                    <h2>Satış Takibi</h2>
+                    <p id="historySummary" class="history-summary">Bugünün özeti yükleniyor...</p>
+                </div>
+                <div class="slip-field history-date-field">
+                    <label>Satış Tarihi</label>
+                    <input type="date" id="historyDateInput">
+                </div>
+            </div>
+            <table class="excel-table slip-history-table">
+                <thead>
+                    <tr>
+                        <th>Fiş No</th>
+                        <th>Tarih</th>
+                        <th>Müşteri</th>
+                        <th class="center-col">Toplam Adet</th>
+                        <th class="right-col">Birim Fiyat</th>
+                        <th class="right-col">Toplam Tutar</th>
+                        <th class="center-col">Stok</th>
+                        <th>Ürünler</th>
+                        <th class="center-col">İşlem</th>
+                    </tr>
+                </thead>
+                <tbody id="historyBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+<script>
+let stoklar = [];
+let seciliUrun = null;
+let sonDuzenlenenParaAlani = 'fiyat';
+let duzenlenenFisId = null;
+let silOnayFisId = null;
+let sonFisListesi = [];
+
+function guvenliCikis(el) {
+    if (el.dataset.confirmed === '1') {
+        return true;
+    }
+    el.dataset.confirmed = '1';
+    el.textContent = 'Emin misiniz?';
+    el.classList.add('logout-confirm');
+    setTimeout(() => {
+        el.dataset.confirmed = '0';
+        el.textContent = 'Çıkış Yap';
+        el.classList.remove('logout-confirm');
+    }, 3000);
+    return false;
+}
+
+function formatTL(num) {
+    return Number(num || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' TL';
+}
+
+function bugunIsoDate() {
+    const d = new Date();
+    return `${d.getFullYear()}-${ikiHane(d.getMonth() + 1)}-${ikiHane(d.getDate())}`;
+}
+
+function trDateToIso(value) {
+    const match = String(value || '').match(/(\d{2})\.(\d{2})\.(\d{4})/);
+    if (!match) return '';
+    return `${match[3]}-${match[2]}-${match[1]}`;
+}
+
+function isoDateToTr(value) {
+    const parts = String(value || '').split('-');
+    if (parts.length !== 3) return '';
+    return `${parts[2]}.${parts[1]}.${parts[0]}`;
+}
+
+function formatParaInputDegeri(num, forceDecimal = false) {
+    const n = Number(num || 0);
+    if (!isFinite(n)) return '';
+    const isTamSayi = Math.abs(n - Math.round(n)) < 0.000001;
+    return n.toLocaleString('tr-TR', {
+        minimumFractionDigits: forceDecimal || !isTamSayi ? 2 : 0,
+        maximumFractionDigits: 2
+    });
+}
+
+function parseTurkishPrice(value) {
+    if (typeof value === 'number') return value;
+    const clean = String(value || '0').replace(/TL/gi, '').replace(/\./g, '').replace(',', '.').trim();
+    const num = parseFloat(clean);
+    return isNaN(num) ? 0 : num;
+}
+
+function ikiHane(value) {
+    return String(value).padStart(2, '0');
+}
+
+function formatNowTr() {
+    const d = new Date();
+    return `${ikiHane(d.getDate())}.${ikiHane(d.getMonth() + 1)}.${d.getFullYear()} ${ikiHane(d.getHours())}:${ikiHane(d.getMinutes())}`;
+}
+
+function bugununTarihiTr() {
+    const d = new Date();
+    return `${ikiHane(d.getDate())}.${ikiHane(d.getMonth() + 1)}.${d.getFullYear()}`;
+}
+
+function simdikiSaatTr() {
+    const d = new Date();
+    return `${ikiHane(d.getHours())}:${ikiHane(d.getMinutes())}`;
+}
+
+function aktifYil() {
+    return new Date().getFullYear();
+}
+
+function formatTarihOnlyDegeri(value) {
+    const raw = String(value || '').trim();
+    if (raw === '') return '';
+
+    const digits = raw.replace(/\D/g, '');
+    if (digits.length >= 8) {
+        return `${digits.slice(0, 2)}.${digits.slice(2, 4)}.${digits.slice(4, 8)}`;
+    }
+    if (digits.length === 4) {
+        return `${digits.slice(0, 2)}.${digits.slice(2, 4)}.${aktifYil()}`;
+    }
+
+    const fullMatch = raw.match(/(\d{1,2})[\.\/\-\s](\d{1,2})[\.\/\-\s](\d{4})/);
+    if (fullMatch) {
+        return `${ikiHane(fullMatch[1])}.${ikiHane(fullMatch[2])}.${fullMatch[3]}`;
+    }
+
+    const shortMatch = raw.match(/^(\d{1,2})[\.\/\-\s](\d{1,2})$/);
+    if (shortMatch) {
+        return `${ikiHane(shortMatch[1])}.${ikiHane(shortMatch[2])}.${aktifYil()}`;
+    }
+
+    return raw;
+}
+
+function formatSaatDegeri(value) {
+    const raw = String(value || '').trim();
+    if (raw === '') return '';
+
+    const digits = raw.replace(/\D/g, '');
+    if (digits.length >= 4) {
+        return `${ikiHane(digits.slice(0, 2))}:${ikiHane(digits.slice(2, 4))}`;
+    }
+
+    const match = raw.match(/(\d{1,2})[:\.\-\s]?(\d{1,2})/);
+    if (match) {
+        return `${ikiHane(match[1])}:${ikiHane(match[2])}`;
+    }
+
+    return raw;
+}
+function formatTarihYazarken(value) {
+    const digits = String(value || '').replace(/\D/g, '').slice(0, 8);
+    if (digits.length <= 2) return digits;
+    if (digits.length <= 4) return `${digits.slice(0, 2)}.${digits.slice(2)}`;
+    return `${digits.slice(0, 2)}.${digits.slice(2, 4)}.${digits.slice(4)}`;
+}
+
+function formatSaatYazarken(value) {
+    const digits = String(value || '').replace(/\D/g, '').slice(0, 4);
+    if (digits.length <= 2) return digits;
+    return `${digits.slice(0, 2)}:${digits.slice(2)}`;
+}
+
+
+function kayitTarihSaatHazirla() {
+    const tarihInput = document.getElementById('kayitTarihInput');
+    const saatInput = document.getElementById('kayitSaatInput');
+
+    const tarihRaw = tarihInput.value.trim();
+    const saatRaw = saatInput.value.trim();
+
+    if (tarihRaw === '' && saatRaw === '') return '';
+
+    const tarih = tarihRaw === '' ? bugununTarihiTr() : formatTarihOnlyDegeri(tarihRaw);
+    const saat = saatRaw === '' ? simdikiSaatTr() : formatSaatDegeri(saatRaw);
+
+    tarihInput.value = tarih;
+    saatInput.value = saat;
+    return `${tarih} ${saat}`;
+}
+
+function formatTurkishMoneyInput(input) {
+    let value = String(input.value || '').trim();
+    if (value === '') return;
+
+    value = value.replace(/TL/gi, '').replace(/[^0-9,\.]/g, '');
+
+    let integerPart = value;
+    let decimalPart = '';
+
+    if (value.includes(',')) {
+        const parts = value.split(',');
+        integerPart = parts[0];
+        decimalPart = parts.slice(1).join('').replace(/\D/g, '').slice(0, 2);
+    }
+
+    integerPart = integerPart.replace(/\./g, '').replace(/\D/g, '');
+    if (integerPart === '') integerPart = '0';
+
+    integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
+    input.value = decimalPart !== '' ? `${integerPart},${decimalPart}` : integerPart;
+}
+
+function fiyatInputDegeri() {
+    const fiyatInput = document.getElementById('fiyatInput');
+    if (!seciliUrun) return 0;
+    return fiyatInput.value.trim() === '' ? parseTurkishPrice(seciliUrun.fiyat) : parseTurkishPrice(fiyatInput.value);
+}
+
+function toplamTutarHesapla() {
+    toplamTutarFiyattanYaz();
+}
+
+function toplamTutarFiyattanYaz() {
+    const toplamInput = document.getElementById('toplamTutarInput');
+    const adet = parseInt(document.getElementById('adetInput').value || '0') || 0;
+    const fiyat = fiyatInputDegeri();
+
+    if (!seciliUrun || adet <= 0) {
+        toplamInput.value = '';
+        toplamInput.placeholder = 'Önce ürün ve adet gir';
+        return;
+    }
+
+    toplamInput.value = formatParaInputDegeri(adet * fiyat, false);
+}
+
+function birimFiyatiToplamdanYaz() {
+    const toplamInput = document.getElementById('toplamTutarInput');
+    const fiyatInput = document.getElementById('fiyatInput');
+    const adet = parseInt(document.getElementById('adetInput').value || '0') || 0;
+    const toplam = parseTurkishPrice(toplamInput.value);
+
+    if (!seciliUrun || adet <= 0 || toplam <= 0) return;
+
+    fiyatInput.value = formatParaInputDegeri(toplam / adet, true);
+}
+
+function hesaplariAdeteGoreGuncelle() {
+    if (sonDuzenlenenParaAlani === 'toplam') {
+        birimFiyatiToplamdanYaz();
+    } else {
+        toplamTutarFiyattanYaz();
+    }
+}
+
+function normalizeText(value) {
+    return String(value || '')
+        .toUpperCase()
+        .replace(/İ/g, 'I')
+        .replace(/[^A-Z0-9]/g, '');
+}
+
+function tireDigits(value) {
+    return String(value || '').replace(/[^0-9]/g, '');
+}
+
+function normalizeTireSize(value) {
+    const digits = tireDigits(value);
+    if (digits.length >= 7) return digits.slice(0, 7);
+    return digits;
+}
+
+function formatTireSize(value) {
+    const digits = tireDigits(value);
+    if (digits.length >= 7) {
+        return `${digits.slice(0, 3)}/${digits.slice(3, 5)} R${digits.slice(5, 7)}`;
+    }
+
+    const raw = String(value || '').trim().toUpperCase().replace(/\s+/g, ' ');
+    const match = raw.match(/(\d{3})\s*[\/\- ]?\s*(\d{2})\s*R?\s*(\d{1,2})/i);
+    if (match) {
+        return `${match[1]}/${match[2]} R${match[3].padStart(2, '0')}`;
+    }
+
+    return String(value || '');
+}
+
+function mesaj(text, renk = '#55524C') {
+    const area = document.getElementById('slipMsg');
+    area.textContent = text;
+    area.style.color = renk;
+    area.style.display = 'block';
+}
+
+function stoklariYukle() {
+    return fetch('/api/stok')
+        .then(res => res.json())
+        .then(data => { stoklar = data || []; });
+}
+
+function satislariYukle() {
+    const tarihInput = document.getElementById('historyDateInput');
+    if (tarihInput && !tarihInput.value) tarihInput.value = bugunIsoDate();
+    const seciliIso = tarihInput ? tarihInput.value : bugunIsoDate();
+    const seciliTr = isoDateToTr(seciliIso);
+
+    return fetch('/api/cikis-fisleri')
+        .then(res => res.json())
+        .then(data => {
+            const tbody = document.getElementById('historyBody');
+            const summary = document.getElementById('historySummary');
+            tbody.innerHTML = '';
+
+            sonFisListesi = data || [];
+            const tumListe = sonFisListesi.slice().reverse();
+            const list = tumListe.filter(fis => trDateToIso(fis.tarih || '') === seciliIso);
+
+            const toplamFis = list.length;
+            const toplamAdet = list.reduce((sum, fis) => sum + (Number(fis.toplam_adet || 0) || 0), 0);
+            const toplamTutar = list.reduce((sum, fis) => sum + (Number(fis.toplam_tutar || 0) || 0), 0);
+
+            if (summary) {
+                summary.textContent = `${seciliTr || 'Seçili tarih'} özeti: ${toplamFis} fiş, ${toplamAdet} adet, ${formatTL(toplamTutar)}`;
+            }
+
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="center-col">${seciliTr || 'Seçili tarih'} için satış kaydı yok.</td></tr>`;
+                return;
+            }
+
+            list.forEach(fis => {
+                const tr = document.createElement('tr');
+                const satirlar = fis.satirlar || [];
+                const ilkSatir = satirlar[0] || {};
+                const birimFiyat = Number(ilkSatir.fiyat || 0);
+                const urunler = satirlar.map(s => `${s.marka || ''} ${formatTireSize(s.ebat)} ${s.desen || ''} x${s.adet}`).join(' | ');
+                tr.innerHTML = `
+                    <td>${fis.fis_no || fis.id}</td>
+                    <td>${fis.tarih || ''}</td>
+                    <td>${fis.musteri || ''}</td>
+                    <td class="center-col">${fis.toplam_adet || 0}</td>
+                    <td class="right-col">${formatTL(birimFiyat)}</td>
+                    <td class="right-col">${formatTL(fis.toplam_tutar || 0)}</td>
+                    <td class="center-col">${fis.stok_yansit === false ? 'Hayır' : 'Evet'}</td>
+                    <td>${urunler}</td>
+                    <td class="center-col history-action-cell">
+                        <button type="button" class="mini-edit-btn" onclick="fisDuzenleBaslat(${fis.id})">Düzelt</button>
+                        <button type="button" class="mini-delete-btn" onclick="fisSil(${fis.id}, this)">Sil</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        });
+}
+
+function bindTireSizeSearchInput() {
+    const input = document.getElementById('urunArama');
+    if (!input) return;
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const formatted = formatTireSize(input.value);
+            if (formatted) input.value = formatted;
+            urunAra();
+        }
+    });
+    input.addEventListener('blur', function() {
+        const formatted = formatTireSize(input.value);
+        if (formatted) input.value = formatted;
+        urunAra();
+    });
+}
+
+function urunAra() {
+    const q = document.getElementById('urunAramaInput').value.trim();
+    const tbody = document.getElementById('resultBody');
+    tbody.innerHTML = '';
+
+    if (q.length < 2) {
+        tbody.innerHTML = '<tr><td colspan="9" class="center-col">Ebat veya kod yazarak ürün ara.</td></tr>';
+        return;
+    }
+
+    const nq = normalizeText(q);
+    const qEbat = normalizeTireSize(q);
+    const eslesenler = stoklar.filter(item => {
+        const ebat = normalizeText(item.ebat);
+        const ebatDigits = normalizeTireSize(item.ebat);
+        const kod = normalizeText(item.kod);
+        const desen = normalizeText(item.desen);
+        const marka = normalizeText(item.marka);
+
+        const ebatMatch = qEbat.length >= 3 && ebatDigits.includes(qEbat);
+        const normalMatch = ebat.includes(nq) || kod.includes(nq) || desen.includes(nq) || marka.includes(nq);
+
+        return ebatMatch || normalMatch;
+    }).slice(0, 40);
+
+    if (eslesenler.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="center-col">Eşleşen ürün bulunamadı.</td></tr>';
+        return;
+    }
+
+    eslesenler.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = 'result-row';
+        tr.innerHTML = `
+            <td>${item.marka || ''}</td>
+            <td class="center-col">${item.kod || ''}</td>
+            <td>${item.desen || ''}</td>
+            <td class="center-col">${formatTireSize(item.ebat)}</td>
+            <td class="center-col">${item.mevsim || ''}</td>
+            <td class="center-col">${item.yil || ''}</td>
+            <td>${item.depo || ''}</td>
+            <td class="center-col"><strong>${item.miktar || 0}</strong></td>
+            <td class="right-col">${formatTL(item.fiyat || 0)}</td>
+        `;
+        tr.addEventListener('click', () => urunSec(item, tr));
+        tbody.appendChild(tr);
+    });
+}
+
+function urunSec(item, row) {
+    document.querySelectorAll('#resultBody tr').forEach(r => r.classList.remove('selected-row'));
+    row.classList.add('selected-row');
+    seciliUrun = item;
+    document.getElementById('selectedProductText').textContent = `${item.marka || ''} | ${formatTireSize(item.ebat)} | ${item.desen || ''} | Kod: ${item.kod || ''} | Mevcut stok: ${item.miktar || 0}`;
+    const fiyatInput = document.getElementById('fiyatInput');
+    fiyatInput.value = '';
+    fiyatInput.placeholder = 'Önerilen Fiyat: ' + formatTL(item.fiyat || 0);
+    document.getElementById('adetInput').value = 1;
+    sonDuzenlenenParaAlani = 'fiyat';
+    toplamTutarFiyattanYaz();
+    mesaj('Ürün seçildi. Adet girip fişi kaydedebilirsin.', '#2E7D4F');
+}
+
+function formuTemizle() {
+    document.getElementById('musteriInput').value = '';
+    document.getElementById('urunAramaInput').value = '';
+    document.getElementById('adetInput').value = 1;
+    document.getElementById('fiyatInput').value = '';
+    document.getElementById('fiyatInput').placeholder = 'Önce ürün seç';
+    document.getElementById('toplamTutarInput').value = '';
+    document.getElementById('toplamTutarInput').placeholder = 'Önce ürün ve adet gir';
+    sonDuzenlenenParaAlani = 'fiyat';
+    document.getElementById('kayitTarihInput').value = '';
+    document.getElementById('kayitSaatInput').value = '';
+    document.getElementById('satirAciklamaInput').value = '';
+    document.getElementById('stokYansitInput').checked = true;
+    document.getElementById('selectedProductText').textContent = 'Henüz ürün seçilmedi.';
+    document.getElementById('resultBody').innerHTML = '<tr><td colspan="9" class="center-col">Ebat veya kod yazarak ürün ara.</td></tr>';
+    seciliUrun = null;
+    duzenlenenFisId = null;
+    silOnayFisId = null;
+    document.getElementById('fisKaydetBtn').textContent = 'Fişi Kaydet ✔';
+    mesaj('Form temizlendi.');
+}
+
+function cikisFisiKaydet() {
+    if (!seciliUrun) {
+        mesaj('Önce listeden bir ürün seçmelisin.', '#B23A3A');
+        return;
+    }
+
+    const adet = parseInt(document.getElementById('adetInput').value || '0') || 0;
+    if (adet <= 0) {
+        mesaj('Adet 1 veya daha büyük olmalı.', '#B23A3A');
+        return;
+    }
+
+    const stokYansit = document.getElementById('stokYansitInput').checked;
+    const mevcut = parseInt(seciliUrun.miktar || 0) || 0;
+    if (!duzenlenenFisId && stokYansit && adet > mevcut) {
+        mesaj(`Yetersiz stok. Mevcut: ${mevcut}, istenen: ${adet}`, '#B23A3A');
+        return;
+    }
+
+    const fiyat = fiyatInputDegeri();
+    const kayitTarihi = kayitTarihSaatHazirla();
+    const toplamInput = document.getElementById('toplamTutarInput');
+    const toplamTutar = toplamInput.value.trim() === '' ? adet * fiyat : parseTurkishPrice(toplamInput.value);
+
+    const satirlar = [{
+        stok_id: seciliUrun.id,
+        marka: seciliUrun.marka || '',
+        kod: seciliUrun.kod || '',
+        desen: seciliUrun.desen || '',
+        ebat: formatTireSize(seciliUrun.ebat),
+        adet: adet,
+        fiyat: fiyat,
+        toplam_tutar: toplamTutar,
+        aciklama: document.getElementById('satirAciklamaInput').value.trim()
+    }];
+
+    const url = duzenlenenFisId ? `/api/cikis-fisi/${duzenlenenFisId}` : '/api/cikis-fisi';
+    const method = duzenlenenFisId ? 'PUT' : 'POST';
+
+    fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            musteri: document.getElementById('musteriInput').value.trim(),
+            tarih: kayitTarihi,
+            toplam_tutar: toplamTutar,
+            stok_yansit: stokYansit,
+            satirlar
+        })
+    })
+    .then(res => res.json().then(data => ({status: res.status, data})))
+    .then(({status, data}) => {
+        if (!data.ok) throw new Error(data.hata || 'Kayıt yapılamadı');
+        mesaj(`${duzenlenenFisId ? 'Çıkış fişi düzeltildi' : 'Çıkış fişi kaydedildi'}. Fiş No: ${data.fis.fis_no}. ${stokYansit ? 'Stok yansıtıldı.' : 'Stok yansıtılmadı.'}`, '#2E7D4F');
+        return stoklariYukle().then(() => {
+            const lastSearch = document.getElementById('urunAramaInput').value;
+            formuTemizle();
+            document.getElementById('urunAramaInput').value = lastSearch;
+            urunAra();
+            satislariYukle();
+        });
+    })
+    .catch(err => mesaj(err.message || 'Kayıt sırasında hata oluştu.', '#B23A3A'));
+}
+
+
+function fisDuzenleBaslat(fisId) {
+    const fis = sonFisListesi.find(x => Number(x.id) === Number(fisId));
+    if (!fis) {
+        mesaj('Düzenlenecek fiş bulunamadı.', '#B23A3A');
+        return;
+    }
+
+    const satir = (fis.satirlar || [])[0];
+    if (!satir) {
+        mesaj('Bu fişte ürün satırı bulunamadı.', '#B23A3A');
+        return;
+    }
+
+    const stokUrun = stoklar.find(x => Number(x.id) === Number(satir.stok_id));
+    seciliUrun = stokUrun || {
+        id: satir.stok_id,
+        marka: satir.marka,
+        kod: satir.kod,
+        desen: satir.desen,
+        ebat: satir.ebat,
+        miktar: 0,
+        fiyat: satir.fiyat
+    };
+
+    duzenlenenFisId = Number(fisId);
+    silOnayFisId = null;
+    document.getElementById('fisKaydetBtn').textContent = 'Düzeltmeyi Kaydet ✔';
+    document.getElementById('musteriInput').value = fis.musteri || '';
+    document.getElementById('adetInput').value = satir.adet || 1;
+    document.getElementById('fiyatInput').value = formatParaInputDegeri(satir.fiyat || 0, false);
+    document.getElementById('toplamTutarInput').value = formatParaInputDegeri(fis.toplam_tutar || satir.toplam_tutar || 0, false);
+    document.getElementById('satirAciklamaInput').value = satir.aciklama || fis.aciklama || '';
+    document.getElementById('stokYansitInput').checked = fis.stok_yansit !== false;
+
+    const tarih = String(fis.tarih || '');
+    const tarihMatch = tarih.match(/(\d{2}\.\d{2}\.\d{4})/);
+    const saatMatch = tarih.match(/(\d{2}:\d{2})/);
+    document.getElementById('kayitTarihInput').value = tarihMatch ? tarihMatch[1] : '';
+    document.getElementById('kayitSaatInput').value = saatMatch ? saatMatch[1] : '';
+
+    document.getElementById('selectedProductText').textContent = `${satir.marka || ''} | ${formatTireSize(satir.ebat)} | ${satir.desen || ''} | Kod: ${satir.kod || ''} | Fiş düzenleniyor`;
+    document.getElementById('urunAramaInput').value = satir.kod || formatTireSize(satir.ebat);
+    urunAra();
+    mesaj(`Fiş düzenleme modunda: ${fis.fis_no || fis.id}. Değiştirip Düzeltmeyi Kaydet'e bas.`, '#A6762B');
+    window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function fisSil(fisId, btn) {
+    const fis = sonFisListesi.find(x => Number(x.id) === Number(fisId));
+    if (!fis) {
+        mesaj('Silinecek fiş bulunamadı.', '#B23A3A');
+        return;
+    }
+
+    if (silOnayFisId !== Number(fisId)) {
+        silOnayFisId = Number(fisId);
+        const eski = btn.textContent;
+        btn.textContent = 'Emin misiniz?';
+        btn.classList.add('delete-confirming');
+        setTimeout(() => {
+            if (silOnayFisId === Number(fisId)) silOnayFisId = null;
+            btn.textContent = eski;
+            btn.classList.remove('delete-confirming');
+        }, 3000);
+        mesaj('Silmek için aynı Sil butonuna tekrar bas. Stok yansıtıldıysa adetler geri eklenecek.', '#B23A3A');
+        return;
+    }
+
+    fetch(`/api/cikis-fisi/${fisId}`, { method: 'DELETE' })
+        .then(res => res.json().then(data => ({status: res.status, data})))
+        .then(({status, data}) => {
+            if (!data.ok) throw new Error(data.hata || 'Silme yapılamadı');
+            silOnayFisId = null;
+            mesaj('Fiş silindi. Stok yansıtılmışsa adetler geri eklendi.', '#2E7D4F');
+            return stoklariYukle().then(() => {
+                satislariYukle();
+                if (duzenlenenFisId === Number(fisId)) formuTemizle();
+            });
+        })
+        .catch(err => mesaj(err.message || 'Silme sırasında hata oluştu.', '#B23A3A'));
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    stoklariYukle().then(() => {
+        return satislariYukle();
+    }).then(() => {
+        const params = new URLSearchParams(window.location.search);
+        const fisId = params.get('fis_id');
+        if (fisId) {
+            setTimeout(() => fisDuzenleBaslat(Number(fisId)), 250);
+        }
+    });
+
+    const historyDateInput = document.getElementById('historyDateInput');
+    if (historyDateInput) {
+        historyDateInput.value = bugunIsoDate();
+        historyDateInput.addEventListener('change', satislariYukle);
+    }
+    document.getElementById('urunAramaInput').addEventListener('input', urunAra);
+
+    const kayitTarihInput = document.getElementById('kayitTarihInput');
+    const kayitSaatInput = document.getElementById('kayitSaatInput');
+
+    kayitTarihInput.addEventListener('input', function() {
+        kayitTarihInput.value = formatTarihYazarken(kayitTarihInput.value);
+    });
+    kayitTarihInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            kayitTarihInput.value = formatTarihOnlyDegeri(kayitTarihInput.value);
+        }
+    });
+    kayitTarihInput.addEventListener('blur', function() {
+        kayitTarihInput.value = formatTarihOnlyDegeri(kayitTarihInput.value);
+    });
+
+    kayitSaatInput.addEventListener('input', function() {
+        kayitSaatInput.value = formatSaatYazarken(kayitSaatInput.value);
+    });
+    kayitSaatInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            kayitSaatInput.value = formatSaatDegeri(kayitSaatInput.value);
+        }
+    });
+    kayitSaatInput.addEventListener('blur', function() {
+        kayitSaatInput.value = formatSaatDegeri(kayitSaatInput.value);
+    });
+
+    ['fiyatInput', 'toplamTutarInput'].forEach(id => {
+        const input = document.getElementById(id);
+
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                formatTurkishMoneyInput(input);
+                if (id === 'fiyatInput') {
+                    sonDuzenlenenParaAlani = 'fiyat';
+                    toplamTutarFiyattanYaz();
+                } else {
+                    sonDuzenlenenParaAlani = 'toplam';
+                    birimFiyatiToplamdanYaz();
+                }
+            }
+        });
+
+        input.addEventListener('blur', function() {
+            formatTurkishMoneyInput(input);
+            if (id === 'fiyatInput') {
+                sonDuzenlenenParaAlani = 'fiyat';
+                toplamTutarFiyattanYaz();
+            } else {
+                sonDuzenlenenParaAlani = 'toplam';
+                birimFiyatiToplamdanYaz();
+            }
+        });
+
+        input.addEventListener('input', function() {
+            input.value = input.value.replace(/[^0-9,\.]/g, '');
+            if (id === 'fiyatInput') {
+                sonDuzenlenenParaAlani = 'fiyat';
+                toplamTutarFiyattanYaz();
+            } else {
+                sonDuzenlenenParaAlani = 'toplam';
+                birimFiyatiToplamdanYaz();
+            }
+        });
+    });
+
+    document.getElementById('adetInput').addEventListener('input', hesaplariAdeteGoreGuncelle);
+});
+</script>
+</body>
+</html>

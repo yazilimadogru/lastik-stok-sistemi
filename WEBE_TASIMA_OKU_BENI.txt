@@ -1,0 +1,13 @@
+1) Bu sürüm web'e taşıma hazırlık sürümüdür.
+2) Veri sistemi JSON yanında SQLite veritabanına da yazacak şekilde güçlendirildi.
+3) İlk çalıştırmada mevcut data/stok.json, data/cikis_fisleri.json ve data/stok_hareketleri.json otomatik SQLite içine aktarılır.
+4) Lokal çalıştırma:
+   pip install -r requirements.txt
+   python app.py
+5) Web'e atarken önerilen başlangıç:
+   - GitHub'a yükle
+   - Render/Railway/PythonAnywhere üzerinden Flask uygulaması olarak yayınla
+   - Start command: gunicorn app:app
+6) Veritabanı dosyası: data/lastik_stok.db
+7) JSON dosyaları yedek/uyumluluk için aynen korunur.
+8) Yedek alındığında stok JSON yedeğine ek olarak SQLite DB yedeği de data/yedekler içine alınır.

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yedek Ayarları</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="stok-container-fluid backup-settings-page">
+        <div class="stok-header">
+            <div class="stok-logo-box">
+                <img src="{{ url_for('static', filename='fotolar/logo.png') }}" class="stok-logo" alt="Dervişoğlu Otomotiv Logo">
+            </div>
+            <div class="header-actions">
+                <a href="{{ url_for('stok') }}" class="header-slip-btn">Stok Paneli</a>
+                <a href="{{ url_for('index') }}" class="header-back-btn">Çıkış Yap</a>
+            </div>
+        </div>
+
+        <div class="backup-card">
+            <h1>Yedek Ayarları</h1>
+            <p class="backup-desc">
+                Program zaten kendi içinde yedek alır. Buraya Google Drive, OneDrive veya USB klasörü eklersen,
+                alınan tam yedek dosyası o klasörlere de kopyalanır.
+            </p>
+
+            <div class="backup-form-row">
+                <label>Harici Yedek Klasörleri</label>
+                <textarea id="backupFolders" rows="6" placeholder="Her satıra bir klasör yolu yaz. Örnek:\nC:\\Users\\Kullanıcı\\Google Drive\\DervisogluYedek\nE:\\DervisogluYedek"></textarea>
+            </div>
+
+            <div class="backup-actions">
+                <button type="button" class="backup-save-btn" onclick="ayarKaydet()">Kaydet</button>
+                <button type="button" class="backup-test-btn" onclick="testYedegiAl()">Test Yedeği Al</button>
+            </div>
+
+            <div id="backupMsg" class="backup-msg"></div>
+        </div>
+    </div>
+
+    <script>
+        function mesaj(text, ok = true) {
+            const area = document.getElementById('backupMsg');
+            area.textContent = text;
+            area.style.color = ok ? '#2E7D4F' : '#B23A3A';
+            area.style.display = 'block';
+        }
+
+        function ayarlariYukle() {
+            fetch('/api/yedek-ayarlari')
+                .then(res => res.json())
+                .then(data => {
+                    const folders = (data.ayarlar && data.ayarlar.harici_klasorler) ? data.ayarlar.harici_klasorler : [];
+                    document.getElementById('backupFolders').value = folders.join('\n');
+                })
+                .catch(() => mesaj('Yedek ayarları yüklenemedi.', false));
+        }
+
+        function ayarKaydet() {
+            const folders = document.getElementById('backupFolders').value
+                .split('\n')
+                .map(x => x.trim())
+                .filter(Boolean);
+
+            fetch('/api/yedek-ayarlari', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({harici_klasorler: folders, tam_yedek_zip: true})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.ok) throw new Error('Kaydedilemedi');
+                mesaj('Yedek ayarları kaydedildi.');
+            })
+            .catch(() => mesaj('Yedek ayarları kaydedilemedi.', false));
+        }
+
+        function testYedegiAl() {
+            mesaj('Test yedeği alınıyor...');
+            fetch('/api/yedek-test', {method: 'POST'})
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.ok) throw new Error('Yedek alınamadı');
+                    let text = 'Test yedeği alındı: ' + data.dosya;
+                    if (data.harici && data.harici.length) {
+                        const oklar = data.harici.filter(x => x.ok).map(x => x.klasor);
+                        const hatalar = data.harici.filter(x => !x.ok).map(x => x.klasor);
+                        text += ' | Başarılı harici: ' + oklar.length;
+                        if (hatalar.length) text += ' | Hatalı klasör: ' + hatalar.join(', ');
+                    } else {
+                        text += ' | Harici klasör tanımlı değil.';
+                    }
+                    mesaj(text, true);
+                })
+                .catch(() => mesaj('Test yedeği alınamadı. Klasör yolunu kontrol et.', false));
+        }
+
+        document.addEventListener('DOMContentLoaded', ayarlariYukle);
+    </script>
+</body>
+</html>

@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stok Kaydı Düzelt</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <div class="stok-container-fluid">
+        <h1>Lastik Stok Kaydını Düzelt</h1>
+        
+        <div class="add-page-wrapper">
+            <table class="excel-table insert-table">
+                <thead>
+                    <tr>
+                        <th>Marka</th>
+                        <th class="center-col column-md">Kod</th>
+                        <th>Desen</th>
+                        <th>Ebat</th>
+                        <th class="center-col column-xs">Mevsim</th>
+                        <th class="center-col column-xs">Yıl</th>
+                        <th>Depo</th>
+                        <th class="center-col column-xs">RF/SSR</th>
+                        <th class="right-col column-sm">Fiyat (TL)</th>
+                        <th class="center-col column-xs">Miktar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><div class="brand-select" data-input-id="editBrand">
+    <button type="button" class="brand-select-btn">
+        <span class="brand-selected">Marka seçin...</span>
+        <span class="brand-arrow">⌄</span>
+    </button>
+    <div class="brand-menu">
+        <button type="button" data-value="Pirelli"><span class="brand-logo-mini"><img src="{{ url_for('static', filename='fotolar/markalar/pirelli.png') }}" alt="Pirelli" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"><span class="brand-logo-fallback">P</span></span><span>Pirelli</span></button>
+        <button type="button" data-value="Continental"><span class="brand-logo-mini"><img src="{{ url_for('static', filename='fotolar/markalar/continental.png') }}" alt="Continental" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"><span class="brand-logo-fallback">C</span></span><span>Continental</span></button>
+        <button type="button" data-value="Matador"><span class="brand-logo-mini"><img src="{{ url_for('static', filename='fotolar/markalar/matador.png') }}" alt="Matador" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"><span class="brand-logo-fallback">M</span></span><span>Matador</span></button>
+        <button type="button" data-value="Barum"><span class="brand-logo-mini"><img src="{{ url_for('static', filename='fotolar/markalar/barum.png') }}" alt="Barum" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"><span class="brand-logo-fallback">B</span></span><span>Barum</span></button>
+        <button type="button" data-value="Lassa"><span class="brand-logo-mini"><img src="{{ url_for('static', filename='fotolar/markalar/lassa.png') }}" alt="Lassa" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"><span class="brand-logo-fallback">L</span></span><span>Lassa</span></button>
+        <button type="button" data-value="Prometeon"><span class="brand-logo-mini"><img src="{{ url_for('static', filename='fotolar/markalar/prometeon.png') }}" alt="Prometeon" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"><span class="brand-logo-fallback">PR</span></span><span>Prometeon</span></button>
+        <button type="button" data-value="Anteo"><span class="brand-logo-mini"><img src="{{ url_for('static', filename='fotolar/markalar/anteo.png') }}" alt="Anteo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"><span class="brand-logo-fallback">A</span></span><span>Anteo</span></button>
+        <button type="button" data-value="Pharos"><span class="brand-logo-mini"><img src="{{ url_for('static', filename='fotolar/markalar/pharos.png') }}" alt="Pharos" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"><span class="brand-logo-fallback">PH</span></span><span>Pharos</span></button>
+        <button type="button" data-value="Goodyear"><span class="brand-logo-mini"><img src="{{ url_for('static', filename='fotolar/markalar/goodyear.png') }}" alt="Goodyear" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"><span class="brand-logo-fallback">G</span></span><span>Goodyear</span></button>
+    </div>
+</div>
+<input type="hidden" id="editBrand" value="{{ kayit.marka }}"></td>
+                        <td><input type="text" id="editCode" class="center-col" maxlength="10" value="{{ kayit.kod }}"></td>
+                        <td><input type="text" id="editPattern" value="{{ kayit.desen }}"></td>
+                        <td><input type="text" id="editSize" value="{{ kayit.ebat }}"></td>
+                        <td>
+                            <select id="editSeason" class="center-col">
+                                <option value="">Seçin</option>
+                                <option value="Yaz" {% if kayit.mevsim == 'Yaz' %}selected{% endif %}>Yaz</option>
+                                <option value="Kış" {% if kayit.mevsim == 'Kış' %}selected{% endif %}>Kış</option>
+                                <option value="4 Mev." {% if kayit.mevsim == '4 Mev.' %}selected{% endif %}>4 Mevsim</option>
+                            </select>
+                        </td>
+                        <td><input type="number" id="editYear" class="center-col no-spin" value="{{ kayit.yil }}"></td>
+                        <td><input type="text" id="editWarehouse" value="{{ kayit.depo }}"></td>
+                        <td>
+                            <select id="editRfSsr" class="center-col">
+                                <option value="x" {% if kayit.rf_ssr == 'x' %}selected{% endif %}>Yok (x)</option>
+                                <option value="RF" {% if kayit.rf_ssr == 'RF' %}selected{% endif %}>RF</option>
+                                <option value="SSR" {% if kayit.rf_ssr == 'SSR' %}selected{% endif %}>SSR</option>
+                            </select>
+                        </td>
+                        <td><input type="text" id="editPrice" class="right-col" oninput="formatPriceInput(this)" onblur="lockTwoDecimals(this)"></td>
+                        <td><input type="number" id="editQuantity" class="center-col no-spin" value="{{ kayit.miktar }}"></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="stock-movement-box">
+                <div class="stock-movement-head">
+                    <h2>Lastik Hareketi</h2>
+                    <div class="movement-date-filter">
+                        <input type="text" id="hareketBaslangic" placeholder="Başlangıç: 27.06.2026">
+                        <input type="text" id="hareketBitis" placeholder="Bitiş: 27.06.2026">
+                        <button type="button" onclick="hareketleriYukle()" class="movement-filter-btn">Filtrele</button>
+                        <button type="button" onclick="hareketFiltreTemizle()" class="movement-clear-btn">Tüm Zamanlar</button>
+                    </div>
+                </div>
+                <table class="excel-table movement-table">
+                    <thead>
+                        <tr>
+                            <th>Tarih</th>
+                            <th>İşlem</th>
+                            <th class="center-col">Adet</th>
+                            <th class="center-col">Önce</th>
+                            <th class="center-col">Sonra</th>
+                            <th>Müşteri</th>
+                            <th>Açıklama</th>
+                        </tr>
+                    </thead>
+                    <tbody id="hareketBody">
+                        <tr><td colspan="7" class="center-col">Hareketler yükleniyor...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p id="edit-info-msg" style="color: #55524C; font-size: 14px; font-weight: 600; text-align: right; margin: 15px 10px 0 0; display: block;">Bilgileri değiştirip Kaydet butonuna bas.</p>
+
+            <div class="add-page-actions">
+                <button type="button" onclick="window.location.href='{{ url_for('stok') }}'" class="btn-cancel">Vazgeç ❌</button>
+                <button type="button" onclick="kaydiGuncelle()" class="btn-submit">Kaydet ✔</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        function initBrandSelects() {
+            function closeAll(except = null) {
+                document.querySelectorAll('.brand-select.open').forEach(select => {
+                    if (select !== except) select.classList.remove('open');
+                });
+            }
+
+            function positionMenu(select) {
+                const btn = select.querySelector('.brand-select-btn');
+                const menu = select.querySelector('.brand-menu');
+                const rect = btn.getBoundingClientRect();
+                const gap = 6;
+                const menuWidth = Math.max(rect.width, 210);
+                const maxLeft = window.innerWidth - menuWidth - 8;
+
+                menu.style.width = menuWidth + 'px';
+                menu.style.left = Math.max(8, Math.min(rect.left, maxLeft)) + 'px';
+                menu.style.top = (rect.bottom + gap) + 'px';
+            }
+
+            document.querySelectorAll('.brand-select').forEach(select => {
+                const input = document.getElementById(select.dataset.inputId);
+                const selected = select.querySelector('.brand-selected');
+                const btn = select.querySelector('.brand-select-btn');
+
+                if (input && input.value) selected.textContent = input.value;
+
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const willOpen = !select.classList.contains('open');
+                    closeAll(select);
+                    select.classList.toggle('open', willOpen);
+                    if (willOpen) positionMenu(select);
+                });
+
+                select.querySelectorAll('.brand-menu button').forEach(option => {
+                    option.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (!input) return;
+                        input.value = option.dataset.value;
+                        selected.textContent = option.dataset.value;
+                        select.classList.remove('open');
+                        if (input.id === 'brandInput' && typeof filterTable === 'function') filterTable();
+                    });
+                });
+            });
+
+            window.addEventListener('scroll', () => {
+                document.querySelectorAll('.brand-select.open').forEach(positionMenu);
+            }, true);
+
+            window.addEventListener('resize', () => {
+                document.querySelectorAll('.brand-select.open').forEach(positionMenu);
+            });
+
+            document.addEventListener('click', () => closeAll());
+        }
+
+
+        const kayitId = Number("{{ kayit.id }}");
+        const mevcutFiyat = Number("{{ kayit.fiyat }}") || 0;
+
+        function formatTL(num) {
+            return Number(num || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' TL';
+        }
+
+        function formatPriceInput(input) {
+            let value = input.value;
+            value = value.replace(/[^0-9.,]/g, "");
+            const parts = value.split(',');
+            if (parts.length > 2) value = parts[0] + ',' + parts.slice(1).join('');
+            input.value = value;
+        }
+
+        function lockTwoDecimals(input) {
+            let value = input.value.trim();
+            if (value === "") return;
+            let cleanValue = value.replace(/\./g, "").replace(',', '.');
+            let num = parseFloat(cleanValue);
+            if (isNaN(num)) return;
+            let fixedNum = num.toFixed(2);
+            let finalParts = fixedNum.split('.');
+            let integerPart = finalParts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            input.value = integerPart + "," + finalParts[1];
+        }
+
+
+        function tireDigits(value) {
+            return String(value || '').replace(/[^0-9]/g, '');
+        }
+
+        function normalizeTireSize(value) {
+            const digits = tireDigits(value);
+            if (digits.length >= 7) return digits.slice(0, 7);
+            return digits;
+        }
+
+        function formatTireSize(value) {
+            const raw = String(value || '').trim().toUpperCase();
+            const digits = tireDigits(raw);
+            if (digits.length >= 7) {
+                return `${digits.slice(0, 3)}/${digits.slice(3, 5)} R${digits.slice(5, 7)}`;
+            }
+            const match = raw.match(/(\d{3})\s*[\/\- ]?\s*(\d{2})\s*R?\s*(\d{1,2})/i);
+            if (match) {
+                return `${match[1]}/${match[2]} R${match[3].padStart(2, '0')}`;
+            }
+            return String(value || '').trim();
+        }
+
+        function applyTireSizeFormat(input) {
+            if (!input) return;
+            const formatted = formatTireSize(input.value);
+            if (formatted) input.value = formatted;
+        }
+
+        function bindTireSizeInput(inputId, afterFormat) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    applyTireSizeFormat(input);
+                    if (typeof afterFormat === 'function') afterFormat();
+                }
+            });
+            input.addEventListener('blur', function() {
+                applyTireSizeFormat(input);
+                if (typeof afterFormat === 'function') afterFormat();
+            });
+        }
+
+        function parseTurkishPrice(value) {
+            if (!value) return 0;
+            return parseFloat(String(value).replace(/TL/gi, '').replace(/\./g, '').replace(',', '.').trim()) || 0;
+        }
+
+        function mesajYaz(text, renk = '#55524C') {
+            const msg = document.getElementById('edit-info-msg');
+            msg.textContent = text;
+            msg.style.color = renk;
+            msg.style.display = 'block';
+        }
+
+        function hareketTarihFormatla(input) {
+            if (!input) return;
+            let raw = String(input.value || '').trim();
+            if (!raw) return;
+            let digits = raw.replace(/\D/g, '');
+            if (digits.length === 8) input.value = `${digits.slice(0,2)}.${digits.slice(2,4)}.${digits.slice(4,8)}`;
+            else if (digits.length === 4) input.value = `${digits.slice(0,2)}.${digits.slice(2,4)}.${new Date().getFullYear()}`;
+        }
+
+        function hareketFiltreTemizle() {
+            document.getElementById('hareketBaslangic').value = '';
+            document.getElementById('hareketBitis').value = '';
+            hareketleriYukle();
+        }
+
+        function hareketleriYukle() {
+            const bas = document.getElementById('hareketBaslangic');
+            const bit = document.getElementById('hareketBitis');
+            hareketTarihFormatla(bas);
+            hareketTarihFormatla(bit);
+
+            const params = new URLSearchParams();
+            if (bas.value.trim()) params.append('baslangic', bas.value.trim());
+            if (bit.value.trim()) params.append('bitis', bit.value.trim());
+
+            const tbody = document.getElementById('hareketBody');
+            tbody.innerHTML = '<tr><td colspan="7" class="center-col">Hareketler yükleniyor...</td></tr>';
+
+            fetch(`/api/stok/${kayitId}/hareketler?${params.toString()}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.ok) throw new Error(data.hata || 'Hareketler alınamadı.');
+                    const hareketler = data.hareketler || [];
+                    tbody.innerHTML = '';
+                    if (hareketler.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="7" class="center-col">Bu lastik için hareket bulunamadı.</td></tr>';
+                        return;
+                    }
+                    hareketler.forEach(h => {
+                        const tr = document.createElement('tr');
+                        if (h.fis_id) {
+                            tr.classList.add('movement-clickable');
+                            tr.title = 'Fiş ayrıntısı için çift tıkla';
+                            tr.addEventListener('dblclick', () => { window.location.href = `/cikis-fisi?fis_id=${h.fis_id}`; });
+                        }
+                        const adet = Number(h.adet || 0);
+                        const adetText = adet > 0 ? `+${adet}` : String(adet);
+                        const adetClass = adet < 0 ? 'movement-out' : 'movement-in';
+                        tr.innerHTML = `
+                            <td>${escapeHtml(h.tarih || '')}</td>
+                            <td>${escapeHtml(h.tip || '')}</td>
+                            <td class="center-col ${adetClass}">${adetText}</td>
+                            <td class="center-col">${h.once ?? '-'}</td>
+                            <td class="center-col">${h.sonra ?? '-'}</td>
+                            <td>${escapeHtml(h.musteri || '')}</td>
+                            <td>${escapeHtml(h.aciklama || '')}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                })
+                .catch(err => {
+                    tbody.innerHTML = `<tr><td colspan="7" class="center-col">${escapeHtml(err.message)}</td></tr>`;
+                });
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, function (m) {
+                return ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;'})[m];
+            });
+        }
+
+        function kaydiGuncelle() {
+            const kayit = {
+                marka: document.getElementById("editBrand").value.trim(),
+                kod: document.getElementById("editCode").value.trim(),
+                desen: document.getElementById("editPattern").value.trim(),
+                ebat: formatTireSize(document.getElementById("editSize").value),
+                mevsim: document.getElementById("editSeason").value,
+                yil: document.getElementById("editYear").value.trim(),
+                depo: document.getElementById("editWarehouse").value.trim(),
+                rf_ssr: document.getElementById("editRfSsr").value,
+                fiyat: parseTurkishPrice(document.getElementById("editPrice").value),
+                miktar: document.getElementById("editQuantity").value.trim()
+            };
+
+            fetch(`/api/stok/${kayitId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(kayit)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.ok) throw new Error(data.hata || "Güncelleme başarısız");
+                mesajYaz('Kayıt güncellendi. Düzeltmeden önce otomatik yedek alındı.', '#2E7D4F');
+                setTimeout(() => { window.location.href = "{{ url_for('stok') }}"; }, 800);
+            })
+            .catch(() => mesajYaz('Kayıt güncellenemedi!', '#B23A3A'));
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            initBrandSelects();
+            bindTireSizeInput('editSize');
+            applyTireSizeFormat(document.getElementById('editSize'));
+            const priceInput = document.getElementById('editPrice');
+            if (priceInput) priceInput.value = formatTL(mevcutFiyat).replace(' TL', '');
+            ['hareketBaslangic','hareketBitis'].forEach(id => {
+                const input = document.getElementById(id);
+                if (input) {
+                    input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); hareketleriYukle(); } });
+                    input.addEventListener('blur', () => hareketTarihFormatla(input));
+                }
+            });
+            hareketleriYukle();
+        });
+    </script>
+</body>
+</html>

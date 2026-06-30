@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yeni Stok Ekle</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <div class="stok-container-fluid">
+        <h1>Yeni Lastik Stok Kaydı Oluştur</h1>
+        
+        <div class="add-page-wrapper">
+            <table class="excel-table insert-table">
+                <thead>
+                    <tr>
+                        <th>Marka</th>
+                        <th class="center-col column-md">Kod</th>
+                        <th>Desen</th>
+                        <th>Ebat</th>
+                        <th class="center-col column-xs">Mevsim</th>
+                        <th class="center-col column-xs">Yıl</th>
+                        <th>Depo</th>
+                        <th class="center-col column-xs">RF/SSR</th>
+                        <th class="right-col column-sm">Fiyat (TL)</th>
+                        <th class="center-col column-xs">Miktar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="brand-select" data-input-id="newBrand">
+    <button type="button" class="brand-select-btn">
+        <span class="brand-selected">Marka seçin...</span>
+        <span class="brand-arrow">⌄</span>
+    </button>
+    <div class="brand-menu">
+        <button type="button" data-value="Pirelli"><span class="brand-logo-mini"><img src="{{ url_for('static', filename='fotolar/markalar/pirelli.png') }}" alt="Pirelli" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"><span class="brand-logo-fallback">P</span></span><span>Pirelli</span></button>
+        <button type="button" data-value="Continental"><span class="brand-logo-mini"><img src="{{ url_for('static', filename='fotolar/markalar/continental.png') }}" alt="Continental" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"><span class="brand-logo-fallback">C</span></span><span>Continental</span></button>
+        <button type="button" data-value="Matador"><span class="brand-logo-mini"><img src="{{ url_for('static', filename='fotolar/markalar/matador.png') }}" alt="Matador" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"><span class="brand-logo-fallback">M</span></span><span>Matador</span></button>
+        <button type="button" data-value="Barum"><span class="brand-logo-mini"><img src="{{ url_for('static', filename='fotolar/markalar/barum.png') }}" alt="Barum" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"><span class="brand-logo-fallback">B</span></span><span>Barum</span></button>
+        <button type="button" data-value="Lassa"><span class="brand-logo-mini"><img src="{{ url_for('static', filename='fotolar/markalar/lassa.png') }}" alt="Lassa" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"><span class="brand-logo-fallback">L</span></span><span>Lassa</span></button>
+        <button type="button" data-value="Prometeon"><span class="brand-logo-mini"><img src="{{ url_for('static', filename='fotolar/markalar/prometeon.png') }}" alt="Prometeon" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"><span class="brand-logo-fallback">PR</span></span><span>Prometeon</span></button>
+        <button type="button" data-value="Anteo"><span class="brand-logo-mini"><img src="{{ url_for('static', filename='fotolar/markalar/anteo.png') }}" alt="Anteo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"><span class="brand-logo-fallback">A</span></span><span>Anteo</span></button>
+        <button type="button" data-value="Pharos"><span class="brand-logo-mini"><img src="{{ url_for('static', filename='fotolar/markalar/pharos.png') }}" alt="Pharos" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"><span class="brand-logo-fallback">PH</span></span><span>Pharos</span></button>
+        <button type="button" data-value="Goodyear"><span class="brand-logo-mini"><img src="{{ url_for('static', filename='fotolar/markalar/goodyear.png') }}" alt="Goodyear" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"><span class="brand-logo-fallback">G</span></span><span>Goodyear</span></button>
+    </div>
+</div>
+<input type="hidden" id="newBrand" value="">
+                        </td>
+                        <td><input type="text" id="newCode" class="center-col" placeholder="Max 10 Hane" maxlength="10"></td>
+                        <td><input type="text" id="newPattern" placeholder="Örn: P Zero"></td>
+                        <td><input type="text" id="newSize" placeholder="Örn: 2055516"></td>
+                        <td>
+                            <select id="newSeason" class="center-col">
+                                <option value="">Seçin</option>
+                                <option value="Yaz">Yaz</option>
+                                <option value="Kış">Kış</option>
+                                <option value="4 Mev.">4 Mevsim</option>
+                            </select>
+                        </td>
+                        <td><input type="number" id="newYear" class="center-col no-spin" placeholder="2026"></td>
+                        <td><input type="text" id="newWarehouse" placeholder="Örn: A Deposu"></td>
+                        <td>
+                            <select id="newRfSsr" class="center-col">
+                                <option value="x">Yok (x)</option>
+                                <option value="RF">RF</option>
+                                <option value="SSR">SSR</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="text" id="newPrice" class="right-col" placeholder="3.279,65" oninput="formatPriceInput(this)" onblur="lockTwoDecimals(this)">
+                        </td>
+                        <td><input type="number" id="newQuantity" class="center-col no-spin" placeholder="0"></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p id="validation-error-msg" style="color: #B23A3A; font-size: 14px; font-weight: 600; text-align: right; margin: 15px 10px 0 0; display: none;"></p>
+
+            <div class="add-page-actions">
+                <button type="button" id="doubleCancelBtn" onclick="handleSecureCancel()" class="btn-cancel">İptal ❌</button>
+                <button type="button" id="doubleSubmitBtn" onclick="validateAndSubmit()" class="btn-submit">Bitir ✔</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        function initBrandSelects() {
+            function closeAll(except = null) {
+                document.querySelectorAll('.brand-select.open').forEach(select => {
+                    if (select !== except) select.classList.remove('open');
+                });
+            }
+
+            function positionMenu(select) {
+                const btn = select.querySelector('.brand-select-btn');
+                const menu = select.querySelector('.brand-menu');
+                const rect = btn.getBoundingClientRect();
+                const gap = 6;
+                const menuWidth = Math.max(rect.width, 210);
+                const maxLeft = window.innerWidth - menuWidth - 8;
+
+                menu.style.width = menuWidth + 'px';
+                menu.style.left = Math.max(8, Math.min(rect.left, maxLeft)) + 'px';
+                menu.style.top = (rect.bottom + gap) + 'px';
+            }
+
+            document.querySelectorAll('.brand-select').forEach(select => {
+                const input = document.getElementById(select.dataset.inputId);
+                const selected = select.querySelector('.brand-selected');
+                const btn = select.querySelector('.brand-select-btn');
+
+                if (input && input.value) selected.textContent = input.value;
+
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const willOpen = !select.classList.contains('open');
+                    closeAll(select);
+                    select.classList.toggle('open', willOpen);
+                    if (willOpen) positionMenu(select);
+                });
+
+                select.querySelectorAll('.brand-menu button').forEach(option => {
+                    option.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (!input) return;
+                        input.value = option.dataset.value;
+                        selected.textContent = option.dataset.value;
+                        select.classList.remove('open');
+                        if (input.id === 'brandInput' && typeof filterTable === 'function') filterTable();
+                    });
+                });
+            });
+
+            window.addEventListener('scroll', () => {
+                document.querySelectorAll('.brand-select.open').forEach(positionMenu);
+            }, true);
+
+            window.addEventListener('resize', () => {
+                document.querySelectorAll('.brand-select.open').forEach(positionMenu);
+            });
+
+            document.addEventListener('click', () => closeAll());
+        }
+
+
+        function formatPriceInput(input) {
+            let value = input.value;
+            value = value.replace(/[^0-9.,]/g, "");
+            const parts = value.split(',');
+            if (parts.length > 2) value = parts[0] + ',' + parts.slice(1).join('');
+            input.value = value;
+        }
+
+        function lockTwoDecimals(input) {
+            let value = input.value.trim();
+            if (value === "") return;
+            let cleanValue = value.replace(/\./g, "").replace(',', '.');
+            let num = parseFloat(cleanValue);
+            if (isNaN(num)) return;
+            let fixedNum = num.toFixed(2);
+            let finalParts = fixedNum.split('.');
+            let integerPart = finalParts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            input.value = integerPart + "," + finalParts[1];
+        }
+
+
+        function tireDigits(value) {
+            return String(value || '').replace(/[^0-9]/g, '');
+        }
+
+        function normalizeTireSize(value) {
+            const digits = tireDigits(value);
+            if (digits.length >= 7) return digits.slice(0, 7);
+            return digits;
+        }
+
+        function formatTireSize(value) {
+            const raw = String(value || '').trim().toUpperCase();
+            const digits = tireDigits(raw);
+            if (digits.length >= 7) {
+                return `${digits.slice(0, 3)}/${digits.slice(3, 5)} R${digits.slice(5, 7)}`;
+            }
+            const match = raw.match(/(\d{3})\s*[\/\- ]?\s*(\d{2})\s*R?\s*(\d{1,2})/i);
+            if (match) {
+                return `${match[1]}/${match[2]} R${match[3].padStart(2, '0')}`;
+            }
+            return String(value || '').trim();
+        }
+
+        function applyTireSizeFormat(input) {
+            if (!input) return;
+            const formatted = formatTireSize(input.value);
+            if (formatted) input.value = formatted;
+        }
+
+        function bindTireSizeInput(inputId, afterFormat) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    applyTireSizeFormat(input);
+                    if (typeof afterFormat === 'function') afterFormat();
+                }
+            });
+            input.addEventListener('blur', function() {
+                applyTireSizeFormat(input);
+                if (typeof afterFormat === 'function') afterFormat();
+            });
+        }
+
+        function parseTurkishPrice(value) {
+            if (!value) return 0;
+            return parseFloat(String(value).replace(/TL/gi, '').replace(/\./g, '').replace(',', '.').trim()) || 0;
+        }
+
+        let cancelClickCount = 0;
+        let cancelTimeout;
+
+        function handleSecureCancel() {
+            resetSubmitButton();
+            const btn = document.getElementById("doubleCancelBtn");
+            cancelClickCount++;
+
+            if (cancelClickCount === 1) {
+                btn.textContent = "Emin misiniz? Tekrar Basın ⚠";
+                btn.style.backgroundColor = "#B23A3A";
+                btn.style.color = "#ffffff";
+                btn.style.borderColor = "#8C2A2A";
+                cancelTimeout = setTimeout(resetCancelButton, 3000);
+            } else if (cancelClickCount === 2) {
+                clearTimeout(cancelTimeout);
+                window.location.href = "{{ url_for('stok') }}";
+            }
+        }
+
+        function resetCancelButton() {
+            cancelClickCount = 0;
+            const btn = document.getElementById("doubleCancelBtn");
+            btn.textContent = "İptal ❌";
+            btn.style.backgroundColor = "#f1f3f4";
+            btn.style.color = "#333333";
+            btn.style.borderColor = "#dadce0";
+        }
+
+        let submitClickCount = 0;
+        let submitTimeout;
+
+        function validateAndSubmit() {
+            resetCancelButton();
+
+            const brand = document.getElementById("newBrand").value.trim();
+            const code = document.getElementById("newCode").value.trim();
+            const pattern = document.getElementById("newPattern").value.trim();
+            const size = formatTireSize(document.getElementById("newSize").value);
+            const season = document.getElementById("newSeason").value;
+            const year = document.getElementById("newYear").value.trim();
+            const warehouse = document.getElementById("newWarehouse").value.trim();
+            const price = document.getElementById("newPrice").value.trim();
+            const qty = document.getElementById("newQuantity").value.trim();
+            const errorArea = document.getElementById("validation-error-msg");
+            const submitBtn = document.getElementById("doubleSubmitBtn");
+            const isMissing = (brand === "" || code === "" || pattern === "" || size === "" || season === "" || year === "" || warehouse === "" || price === "" || qty === "");
+
+            submitClickCount++;
+
+            if (submitClickCount === 1) {
+                errorArea.style.display = "none";
+                if (isMissing) {
+                    submitBtn.textContent = "Eksik Alanlar Var! Yinede Kaydet ⚠";
+                    submitBtn.style.backgroundColor = "#A6762B";
+                    submitBtn.style.color = "#ffffff";
+                } else {
+                    submitBtn.textContent = "Emin misiniz? Son Kez Basın ⚠";
+                    submitBtn.style.backgroundColor = "#55524C";
+                    submitBtn.style.color = "#ffffff";
+                }
+                submitTimeout = setTimeout(resetSubmitButton, 3000);
+            } else if (submitClickCount === 2) {
+                clearTimeout(submitTimeout);
+                const kayit = {
+                    marka: brand,
+                    kod: code,
+                    desen: pattern,
+                    ebat: size,
+                    mevsim: season,
+                    yil: year,
+                    depo: warehouse,
+                    rf_ssr: document.getElementById("newRfSsr").value,
+                    fiyat: parseTurkishPrice(price),
+                    miktar: qty
+                };
+
+                fetch("/api/stok", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(kayit)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.ok) throw new Error("Kayıt başarısız");
+                    errorArea.textContent = isMissing ? "Veri bazı eksik alanlarla birlikte başarıyla sisteme işlendi." : "Stok kaydı eksiksiz şekilde başarıyla oluşturuldu!";
+                    errorArea.style.color = "#2E7D4F";
+                    errorArea.style.display = "block";
+                    setTimeout(() => { window.location.href = "{{ url_for('stok') }}"; }, 1000);
+                })
+                .catch(() => {
+                    errorArea.textContent = "Kayıt sırasında hata oluştu. Veri kaydedilmedi.";
+                    errorArea.style.color = "#B23A3A";
+                    errorArea.style.display = "block";
+                    resetSubmitButton();
+                });
+            }
+        }
+
+        function resetSubmitButton() {
+            submitClickCount = 0;
+            const btn = document.getElementById("doubleSubmitBtn");
+            btn.textContent = "Bitir ✔";
+            btn.style.backgroundColor = "#2E7D4F";
+            btn.style.color = "white";
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            initBrandSelects();
+            bindTireSizeInput('newSize');
+        });
+    </script>
+</body>
+</html>

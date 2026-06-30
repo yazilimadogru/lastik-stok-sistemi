@@ -1,0 +1,1915 @@
+/* ==========================================================================
+   DERVİŞOĞLU OTOMOTİV — STOK PANELİ
+   Tasarım sistemi: lastik/kauçuk temalı, aydınlık zemin, koyu antrasit +
+   turuncu vurgu. Tüm class/id adları orijinal app.py ve şablonlarla aynı
+   tutuldu; burada sadece görünüm yeniden tasarlandı.
+   ========================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+/* ==========================================================================
+   0. RENK PALETİ VE DEĞİŞKENLER
+   ========================================================================== */
+:root {
+    /* Nötrler — kağıt/kauçuk */
+    --paper: #F6F4F1;          /* sayfa zemini */
+    --surface: #FFFFFF;        /* kart, panel, tablo zemini */
+    --surface-soft: #FAF8F6;   /* hafif vurgulu yüzey */
+    --line: #E4E0D9;           /* standart kenarlık */
+    --line-strong: #D6D1C7;
+
+    /* Mürekkep — metin tonları */
+    --ink: #1C1B1A;            /* başlıklar, ana metin */
+    --ink-soft: #55524C;       /* ikincil metin */
+    --ink-faint: #8A867D;      /* placeholder, yardımcı metin */
+
+    /* Marka — lastik kauçuğu siyahı */
+    --rubber: #1F1E1D;
+    --rubber-soft: #34322F;
+
+    /* Vurgu — lastik performans turuncusu */
+    --accent: #D85B2C;
+    --accent-dark: #B3461F;
+    --accent-soft: #FBE7DA;
+    --accent-soft-line: #F0C9AE;
+
+    /* Durum renkleri */
+    --success: #2E7D4F;
+    --success-dark: #225D3A;
+    --success-soft: #E3F1E7;
+
+    --danger: #B23A3A;
+    --danger-dark: #8C2A2A;
+    --danger-soft: #FAE6E3;
+
+    --warn: #A6762B;
+    --warn-dark: #87601F;
+    --warn-soft: #F7ECD8;
+
+    --info: #3B6FA0;
+    --info-dark: #2C547C;
+    --info-soft: #E3EDF6;
+
+    /* Eski değişken adları (CSS içinde önceden var olan referanslar için) */
+    --renk-ana: #3B6FA0;
+    --renk-ana-koyu: #2C547C;
+    --renk-ozel: #B23A3A;
+    --renk-ozel-koyu: #8C2A2A;
+    --renk-ikincil: #A6762B;
+    --renk-ikincil-koyu: #87601F;
+    --renk-basarili: #2E7D4F;
+    --renk-basarili-koyu: #225D3A;
+
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --shadow-sm: 0 1px 2px rgba(28, 27, 26, 0.06);
+    --shadow-md: 0 6px 20px rgba(28, 27, 26, 0.08);
+    --shadow-lg: 0 16px 40px rgba(28, 27, 26, 0.14);
+}
+
+/* ==========================================================================
+   1. GENEL AYARLAR
+   ========================================================================== */
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--paper);
+    color: var(--ink);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 {
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    letter-spacing: -0.01em;
+}
+
+::selection {
+    background: var(--accent-soft);
+    color: var(--accent-dark);
+}
+
+/* İnce lastik-sırtı dokusu — header alt çizgisi için tekrarlanan desen */
+.tread-rule {
+    height: 4px;
+    width: 100%;
+    background-image: repeating-linear-gradient(
+        100deg,
+        var(--accent) 0px,
+        var(--accent) 10px,
+        transparent 10px,
+        transparent 20px
+    );
+    opacity: 0.9;
+}
+
+/* ==========================================================================
+   2. ANA SAYFA - NAVBAR VE KARŞILAMA
+   ========================================================================== */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 32px;
+    background-color: var(--surface);
+    box-shadow: var(--shadow-sm);
+    border-bottom: 3px solid var(--rubber);
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+}
+
+.site-logo {
+    height: 54px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+}
+
+.login-btn {
+    background-color: var(--rubber);
+    color: white;
+    text-decoration: none;
+    padding: 11px 24px;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.2px;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.login-btn:hover {
+    background-color: var(--accent);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+.content {
+    text-align: center;
+    margin-top: 14vh;
+    padding: 0 24px;
+}
+
+.content-eyebrow {
+    display: inline-block;
+    color: var(--accent-dark);
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-soft-line);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+}
+
+.content h1 {
+    font-size: 3rem;
+    color: var(--ink);
+    font-weight: 700;
+    margin: 0 0 14px 0;
+}
+
+.content-sub {
+    color: var(--ink-soft);
+    font-size: 16px;
+    max-width: 480px;
+    margin: 0 auto;
+    line-height: 1.55;
+}
+
+/* ==========================================================================
+   3. YÖNETİCİ GİRİŞ SAYFASI (LOGIN KARTI)
+   ========================================================================== */
+.login-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at 15% 20%, rgba(216, 91, 44, 0.07), transparent 45%),
+        var(--rubber);
+}
+
+.login-container {
+    background-color: var(--surface);
+    width: 100%;
+    max-width: 380px;
+    padding: 38px 36px 34px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    text-align: center;
+}
+
+.login-logo {
+    height: 38px;
+    width: auto;
+    margin-bottom: 22px;
+}
+
+.login-container h2 {
+    margin: 0 0 8px 0;
+    color: var(--ink);
+    font-size: 23px;
+    font-weight: 700;
+}
+
+.login-subtitle {
+    color: var(--ink-faint);
+    font-size: 13.5px;
+    margin-bottom: 26px;
+}
+
+.input-group {
+    position: relative;
+    margin-bottom: 16px;
+    text-align: left;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    transition: all 0.2s ease;
+    background-color: var(--surface-soft);
+    font-family: inherit;
+}
+
+.input-group input:focus {
+    border-color: var(--accent);
+    background-color: var(--surface);
+    outline: none;
+    box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.login-container button {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--rubber);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 700;
+    transition: all 0.2s ease;
+    margin-top: 6px;
+    font-family: inherit;
+}
+
+.login-container button:hover {
+    background-color: var(--accent);
+}
+
+/* ==========================================================================
+   4. STOK PANELİ ÜST BAŞLIK (LOGO + EYLEM BUTONLARI)
+   ========================================================================== */
+.stok-container-fluid {
+    width: 100%;
+    margin-top: 0;
+    text-align: center;
+    padding-bottom: 40px;
+}
+
+.stok-container-fluid h1 {
+    margin: 30px 0;
+    color: var(--ink);
+    font-weight: 700;
+    font-size: 26px;
+}
+
+.stok-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 95%;
+    max-width: 1500px;
+    margin: 0 auto 18px auto;
+    padding: 14px 0;
+    border-bottom: 3px solid var(--rubber);
+}
+
+.stok-logo-box {
+    display: flex;
+    align-items: center;
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+}
+
+.stok-logo {
+    height: 54px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.header-slip-btn {
+    background: var(--ink);
+    color: #ffffff;
+    text-decoration: none;
+    padding: 9px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.header-slip-btn:hover {
+    background: var(--accent);
+}
+
+.header-back-btn,
+.logout-btn {
+    background: var(--rubber);
+    color: #ffffff;
+    text-decoration: none;
+    padding: 9px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    min-width: 92px;
+    text-align: center;
+    display: inline-block;
+}
+
+.header-back-btn:hover {
+    background: var(--accent);
+}
+
+.logout-btn.logout-confirm {
+    background-color: var(--danger) !important;
+}
+
+/* ==========================================================================
+   5. FİLTRELEME PANELİ
+   ========================================================================== */
+.filter-panel {
+    display: flex;
+    flex-wrap: wrap;
+    background-color: var(--surface);
+    padding: 16px 22px;
+    margin: 0 auto 16px auto;
+    width: 95%;
+    max-width: 1500px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--line);
+    gap: 16px;
+    align-items: center;
+    box-shadow: var(--shadow-sm);
+}
+
+.panel-column {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 150px;
+}
+
+.col-xs {
+    min-width: 90px !important;
+}
+
+.panel-row-group {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.filter-group label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink-faint);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.filter-group input, .filter-group select {
+    padding: 7px 9px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--ink);
+    background-color: var(--surface-soft);
+    width: 100%;
+    outline: none;
+    transition: all 0.15s;
+    font-family: inherit;
+}
+
+.filter-group input::placeholder {
+    color: var(--ink-faint);
+    opacity: 0.8;
+}
+
+.filter-group input:focus, .filter-group select:focus {
+    border-color: var(--accent);
+    background-color: var(--surface);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.no-spin {
+    appearance: textfield;
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
+    margin: 0;
+}
+
+.no-spin::-webkit-outer-spin-button,
+.no-spin::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.search-btn {
+    background-color: var(--ink);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+}
+
+.search-btn:hover {
+    background-color: var(--accent);
+}
+
+/* ==========================================================================
+   6. YÖNETİM BUTONLARI (EKLE / DÜZELT / SİL / YEDEK)
+   ========================================================================== */
+.action-buttons-group {
+    margin-left: auto;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 8px;
+    min-width: 170px;
+}
+
+.action-btn {
+    border: none;
+    padding: 8px 12px;
+    font-size: 12.5px;
+    font-weight: 700;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.18s;
+    text-align: center;
+    width: 100%;
+}
+
+.action-buttons-group a.action-btn {
+    text-decoration: none;
+    display: inline-block;
+}
+
+.add-btn {
+    grid-column: 1;
+    grid-row: 1;
+    background-color: var(--success);
+    color: white;
+}
+
+.add-btn:hover {
+    background-color: var(--success-dark);
+}
+
+.edit-btn {
+    grid-column: 2;
+    grid-row: 1;
+    background-color: var(--warn);
+    color: white;
+}
+
+.edit-btn:hover {
+    background-color: var(--warn-dark);
+}
+
+.delete-btn {
+    grid-column: 2;
+    grid-row: 2;
+    background-color: var(--danger);
+    color: white;
+}
+
+.delete-btn:hover {
+    background-color: var(--danger-dark);
+}
+
+.backup-btn {
+    grid-column: 1;
+    grid-row: 2;
+    background-color: var(--ink);
+    color: white;
+}
+
+.backup-btn:hover {
+    background-color: var(--rubber-soft);
+}
+
+/* ==========================================================================
+   7. EXCEL TARZI TABLO
+   ========================================================================== */
+.excel-table {
+    width: 95%;
+    max-width: 1500px;
+    margin: 0 auto;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    background-color: var(--surface);
+    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.excel-table th {
+    background-color: var(--rubber);
+    color: white;
+    text-align: left;
+    padding: 12px 10px;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    user-select: none;
+}
+
+.excel-table td {
+    padding: 10px 10px;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+}
+
+.excel-table tbody tr:hover {
+    background-color: var(--accent-soft);
+}
+
+.excel-table tbody tr.selected-row {
+    background-color: var(--accent-soft) !important;
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+}
+
+.center-col { text-align: center !important; }
+.right-col { text-align: right !important; }
+
+.column-md { width: 120px; }
+.column-sm { width: 100px; }
+.column-xs { width: 75px; }
+
+.insert-table select {
+    min-width: 88px;
+}
+
+.stok-actions {
+    margin: 40px 0;
+}
+
+.back-btn {
+    display: inline-block;
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 700;
+    border: 1.5px solid var(--ink);
+    padding: 10px 20px;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s;
+}
+
+.back-btn:hover {
+    background-color: var(--ink);
+    color: white;
+}
+
+/* ==========================================================================
+   8. MARKA SEÇİM MENÜSÜ (BRAND SELECT)
+   ========================================================================== */
+.brand-select {
+    position: relative;
+    width: 100%;
+    min-width: 170px;
+    z-index: 20;
+}
+
+.brand-select-btn {
+    width: 100%;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: var(--surface-soft);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 7px 10px;
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    font-family: inherit;
+}
+
+.brand-select-btn:hover,
+.brand-select.open .brand-select-btn {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+    background: var(--surface);
+}
+
+.brand-selected {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--ink-soft);
+    font-weight: 600;
+}
+
+.brand-arrow {
+    color: var(--accent);
+    font-size: 16px;
+    line-height: 1;
+    transition: transform 0.2s ease;
+}
+
+.brand-select.open .brand-arrow {
+    transform: rotate(180deg);
+}
+
+/* Menü ekranın üst katmanında, sabit konumda açılır. */
+.brand-menu {
+    display: none;
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 225px;
+    max-height: 360px !important;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    padding: 6px;
+    z-index: 999999 !important;
+}
+
+.brand-select.open .brand-menu {
+    display: block;
+}
+
+.brand-menu button {
+    width: 100%;
+    min-height: 34px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 6px 8px;
+    color: var(--ink);
+    font-size: 12.5px;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+    font-family: inherit;
+}
+
+.brand-menu button:hover {
+    background: var(--accent-soft);
+    color: var(--accent-dark);
+}
+
+.brand-menu button[data-value=""] {
+    font-weight: 800;
+    color: var(--success-dark);
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 3px;
+    border-radius: 0;
+}
+
+.brand-logo-mini {
+    width: 44px;
+    height: 24px;
+    border-radius: var(--radius-sm);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: var(--surface-soft);
+    border: 1px solid var(--line);
+    overflow: hidden;
+}
+
+.brand-logo-mini img {
+    max-width: 38px;
+    max-height: 18px;
+    object-fit: contain;
+    display: block;
+}
+
+.brand-logo-fallback,
+.brand-badge {
+    min-width: 26px;
+    height: 16px;
+    border-radius: 5px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    color: var(--accent-dark);
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-soft-line);
+}
+
+/* Tablo ve kartlar menüyü kesmesin diye güvenlik */
+.add-page-wrapper,
+.filter-panel,
+.insert-table,
+.insert-table tbody,
+.insert-table tr,
+.insert-table td {
+    overflow: visible !important;
+}
+
+.insert-table .brand-select {
+    min-width: 225px;
+}
+
+/* ==========================================================================
+   9. STOK EKLEME / DÜZENLEME SAYFASI
+   ========================================================================== */
+.add-page-wrapper {
+    padding: 24px;
+    background-color: var(--surface);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--line);
+    margin: 20px auto;
+    width: 95%;
+    max-width: 1500px;
+}
+
+.insert-table tbody input, .insert-table tbody select {
+    width: 100%;
+    border: 1.5px solid var(--line);
+    padding: 7px 9px;
+    font-size: 13px;
+    border-radius: var(--radius-sm);
+    outline: none;
+    background-color: var(--surface-soft);
+    transition: all 0.15s;
+    font-family: inherit;
+}
+
+.insert-table tbody input:focus, .insert-table tbody select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+    background-color: var(--surface);
+}
+
+.add-page-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 14px;
+    margin-top: 26px;
+    border-top: 1px solid var(--line);
+    padding-top: 22px;
+}
+
+.add-page-actions button {
+    padding: 11px 24px;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    min-width: 150px;
+    font-family: inherit;
+}
+
+.btn-cancel {
+    background-color: var(--surface-soft);
+    color: var(--ink);
+    border: 1.5px solid var(--line) !important;
+}
+
+.btn-cancel:hover {
+    background-color: var(--line);
+}
+
+.btn-submit {
+    background-color: var(--success) !important;
+    color: white !important;
+}
+
+.btn-submit:hover {
+    background-color: var(--success-dark) !important;
+}
+
+/* "Çıkış fişi" sayfasında temizle/vazgeç butonu kırmızı tonda kalır */
+.simple-slip-actions .btn-cancel {
+    background-color: var(--danger) !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+
+.simple-slip-actions .btn-cancel:hover {
+    background-color: var(--danger-dark) !important;
+}
+
+/* ==========================================================================
+   10. ÇIKIŞ FİŞİ SAYFASI
+   ========================================================================== */
+.slip-page {
+    margin-top: 0;
+}
+
+.slip-wrapper,
+.slip-history-wrapper {
+    width: 95%;
+    max-width: 1500px;
+    margin: 18px auto;
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--line);
+    padding: 24px;
+    text-align: left;
+}
+
+.simple-slip-wrapper {
+    max-width: 1500px;
+}
+
+.slip-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 16px;
+    margin-bottom: 18px;
+}
+
+.slip-title-row h1 {
+    margin: 0 0 6px 0;
+    color: var(--ink);
+    font-size: 26px;
+}
+
+.slip-title-row p {
+    margin: 0;
+    color: var(--ink-faint);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.slip-no-card {
+    min-width: 120px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 10px 16px;
+    text-align: center;
+    background: var(--surface-soft);
+}
+
+.slip-no-card span {
+    display: block;
+    color: var(--ink-faint);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.slip-no-card strong {
+    display: block;
+    color: var(--accent-dark);
+    font-size: 18px;
+    margin-top: 4px;
+}
+
+.slip-field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 5px;
+}
+
+.slip-field input,
+.slip-field textarea,
+.slip-table input,
+.slip-table select {
+    width: 100%;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 8px 9px;
+    font-size: 13px;
+    outline: none;
+    background: var(--surface-soft);
+    font-family: inherit;
+    transition: all 0.15s;
+}
+
+.slip-field input:focus,
+.slip-field textarea:focus,
+.slip-table input:focus,
+.slip-table select:focus {
+    border-color: var(--accent);
+    background: var(--surface);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.slip-table-wrap {
+    overflow-x: auto;
+}
+
+.slip-table {
+    min-width: 1180px;
+}
+
+.slip-table th,
+.slip-table td {
+    padding: 8px;
+}
+
+.slip-product-col {
+    min-width: 330px;
+}
+
+.slip-stock-select {
+    min-width: 320px;
+}
+
+.row-delete-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: var(--danger);
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.18s;
+}
+
+.row-delete-btn:hover {
+    background: var(--danger-dark);
+}
+
+.slip-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 14px;
+    margin-top: 18px;
+    border-top: 1px solid var(--line);
+    padding-top: 18px;
+}
+
+.slip-actions button {
+    min-width: 140px;
+}
+
+.slip-msg {
+    display: none;
+    margin: 14px 0 0 0;
+    font-size: 13.5px;
+    font-weight: 700;
+    text-align: right;
+}
+
+.slip-history-wrapper h2 {
+    margin: 0 0 4px 0;
+    font-size: 21px;
+    color: var(--ink);
+}
+
+.slip-history-table td {
+    font-size: 12.5px;
+}
+
+@media (max-width: 900px) {
+    .slip-top-form {
+        grid-template-columns: 1fr;
+    }
+
+    .header-actions {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+}
+
+/* ---- Ürün arama kutusu ---- */
+.slip-search-box {
+    background: var(--surface-soft);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.slip-search-box label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 7px;
+}
+
+.slip-search-box input {
+    width: 100%;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 11px 12px;
+    font-size: 15px;
+    outline: none;
+    background: var(--surface);
+    font-family: inherit;
+}
+
+.slip-search-box input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.slip-search-box small {
+    display: block;
+    color: var(--ink-faint);
+    font-size: 12px;
+    font-weight: 500;
+    margin-top: 8px;
+}
+
+.result-wrap {
+    max-height: 330px;
+    overflow: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    margin-bottom: 18px;
+}
+
+.result-table {
+    min-width: 1000px;
+    box-shadow: none;
+    border-radius: 0;
+}
+
+.result-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
+.result-row {
+    cursor: pointer;
+}
+
+.result-row:hover {
+    background: var(--accent-soft) !important;
+}
+
+/* ---- Seçilen ürün kartı ---- */
+.selected-sale-card {
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    padding: 16px;
+}
+
+.selected-sale-title {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 8px;
+}
+
+.selected-sale-product {
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 700;
+    background: var(--surface-soft);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--accent);
+    border-radius: var(--radius-sm);
+    padding: 11px 12px;
+    margin-bottom: 14px;
+}
+
+.selected-sale-meta-grid {
+    display: grid;
+    grid-template-columns: minmax(280px, 0.65fr) 220px;
+    gap: 12px;
+    align-items: start;
+    margin-bottom: 12px;
+}
+
+.customer-row-only {
+    grid-template-columns: minmax(280px, 0.55fr) !important;
+    max-width: 520px;
+}
+
+.customer-field-wide input {
+    min-height: 36px;
+}
+
+.date-time-stack {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+}
+
+.compact-date-time {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+}
+
+.compact-date-time .slip-field input {
+    height: 32px;
+    padding: 6px 8px;
+}
+
+.selected-sale-form {
+    display: grid;
+    grid-template-columns: 105px 170px 180px minmax(300px, 0.75fr);
+    gap: 12px;
+    align-items: start;
+}
+
+.sale-form-with-date {
+    display: grid !important;
+    grid-template-columns: 100px 150px 165px 155px minmax(220px, 1fr) !important;
+    gap: 10px !important;
+    align-items: start !important;
+}
+
+.slip-field textarea {
+    min-height: 72px;
+    line-height: 1.4;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.selected-note-field textarea {
+    height: 78px;
+    max-height: 105px;
+    resize: vertical;
+}
+
+.note-field-right textarea {
+    height: 100%;
+    min-height: 92px;
+}
+
+.slip-general-note-field textarea {
+    height: 74px;
+    max-height: 105px;
+    resize: vertical;
+}
+
+#fiyatInput::placeholder,
+#toplamTutarInput::placeholder,
+#kayitTarihInput::placeholder,
+#kayitSaatInput::placeholder {
+    color: var(--ink-faint);
+    font-weight: 500;
+    opacity: 1;
+}
+
+.simple-slip-actions {
+    border-top: none;
+    margin-top: 16px;
+    padding-top: 0;
+}
+
+/* Stoğa yansıt — Adet kutusunun altında, etiketsiz kompakt onay kutusu */
+.stock-reflect-under-qty {
+    margin-top: 8px;
+    width: 100%;
+    box-sizing: border-box;
+    white-space: normal;
+    font-size: 11px;
+    line-height: 1.25;
+    padding: 7px 8px;
+}
+
+.slip-check-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 36px;
+    padding: 8px 10px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--ink-soft);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.slip-check-row input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.slip-check-row span {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+@media (max-width: 1250px) {
+    .sale-form-with-date {
+        grid-template-columns: 100px 150px 165px 155px 1fr !important;
+    }
+}
+
+@media (max-width: 900px) {
+    .simple-slip-grid,
+    .selected-sale-meta-grid,
+    .selected-sale-form,
+    .customer-row-only,
+    .sale-form-with-date {
+        grid-template-columns: 1fr !important;
+        max-width: none;
+    }
+}
+
+/* ---- Satış takibi geçmişi ---- */
+.sales-history-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 14px;
+}
+
+.sales-history-head h2 {
+    margin-bottom: 4px;
+}
+
+.history-summary {
+    margin: 0;
+    color: var(--accent-dark);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.history-date-field {
+    min-width: 170px;
+    max-width: 190px;
+}
+
+.history-date-field input[type="date"] {
+    height: 34px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.history-action-cell {
+    white-space: nowrap;
+}
+
+.mini-edit-btn,
+.mini-delete-btn {
+    border: none;
+    border-radius: 5px;
+    padding: 5px 9px;
+    margin: 0 2px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    color: #ffffff;
+    transition: all 0.2s ease;
+}
+
+.mini-edit-btn {
+    background: var(--warn);
+}
+
+.mini-edit-btn:hover {
+    background: var(--warn-dark);
+}
+
+.mini-delete-btn {
+    background: var(--danger);
+}
+
+.mini-delete-btn:hover,
+.mini-delete-btn.delete-confirming {
+    background: var(--danger-dark);
+}
+
+@media (max-width: 760px) {
+    .sales-history-head {
+        flex-direction: column;
+    }
+    .history-date-field {
+        width: 100%;
+        max-width: none;
+    }
+}
+
+/* ==========================================================================
+   11. PDF FİYAT LİSTESİ AKTARMA SAYFASI
+   ========================================================================== */
+.price-import-page {
+    margin-top: 0;
+}
+
+.price-import-wrapper {
+    width: 95%;
+    max-width: 1500px;
+    margin: 0 auto 40px auto;
+    text-align: left;
+}
+
+.price-import-title {
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    padding: 20px 24px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--line);
+    margin-bottom: 18px;
+    border-left: 5px solid var(--accent);
+}
+
+.price-import-title h1 {
+    margin: 0 0 6px 0;
+    color: var(--ink);
+    font-size: 25px;
+}
+
+.price-import-title p {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.price-import-card {
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    padding: 20px 24px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--line);
+    margin-bottom: 18px;
+}
+
+.price-upload-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.price-file-area {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 320px;
+    flex: 1;
+}
+
+.price-file-area label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    letter-spacing: 0.3px;
+}
+
+.price-file-area input[type="file"] {
+    padding: 9px 10px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--surface-soft);
+    font-size: 13px;
+    font-family: inherit;
+}
+
+.price-file-area small {
+    color: var(--ink-faint);
+    font-size: 12px;
+}
+
+.price-read-btn,
+.price-apply-btn {
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 11px 20px;
+    font-weight: 700;
+    cursor: pointer;
+    color: #fff;
+    transition: .2s;
+    min-width: 140px;
+    font-family: inherit;
+}
+
+.price-read-btn {
+    background: var(--ink);
+}
+
+.price-read-btn:hover {
+    background: var(--accent);
+}
+
+.price-apply-btn {
+    background: var(--success);
+}
+
+.price-apply-btn:hover {
+    background: var(--success-dark);
+}
+
+.price-apply-btn:disabled {
+    background: var(--line-strong);
+    cursor: not-allowed;
+}
+
+.price-info-row {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(120px, 1fr));
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.price-stat {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    background: var(--surface-soft);
+}
+
+.price-stat span {
+    display: block;
+    color: var(--ink-faint);
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.price-stat strong {
+    font-size: 22px;
+    color: var(--ink);
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+.price-stat.update {
+    border-left: 4px solid var(--warn);
+}
+
+.price-stat.new {
+    border-left: 4px solid var(--accent);
+}
+
+.price-stat.same {
+    border-left: 4px solid var(--success);
+}
+
+.price-action-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+}
+
+.price-check {
+    color: var(--ink-soft);
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.price-check input {
+    accent-color: var(--accent);
+}
+
+.price-status {
+    margin: 14px 0 0 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink-soft);
+}
+
+.price-preview-wrap {
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    overflow: auto;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--line);
+    max-height: 65vh;
+}
+
+.price-preview-table {
+    min-width: 1100px;
+    border-radius: 0;
+}
+
+.price-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.badge-update {
+    background: var(--warn-soft);
+    color: var(--warn-dark);
+}
+
+.badge-new {
+    background: var(--accent-soft);
+    color: var(--accent-dark);
+}
+
+.badge-same {
+    background: var(--success-soft);
+    color: var(--success-dark);
+}
+
+@media (max-width: 800px) {
+    .price-info-row {
+        grid-template-columns: repeat(2, minmax(120px, 1fr));
+    }
+}
+
+/* Fiyat listesi ön izleme miktar kutusu */
+.price-qty-input {
+    width: 70px;
+    height: 30px;
+    padding: 5px 7px;
+    border: 1px solid #c7d1d8;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    box-sizing: border-box;
+    background: #ffffff;
+    color: #333;
+}
+
+.price-qty-input:focus {
+    outline: none;
+    border-color: #679C63;
+    box-shadow: 0 0 0 2px rgba(103, 156, 99, 0.18);
+}
+
+.price-qty-input::placeholder {
+    color: #9aa1a7;
+    font-weight: 700;
+}
+
+
+/* ==========================================================================
+   FİYAT LİSTESİ — İSKONTO ALANI
+   ========================================================================== */
+.price-stat.discount {
+    min-width: 118px;
+}
+
+.discount-input {
+    width: 86px;
+    max-width: 100%;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    padding: 6px 8px;
+    font-size: 15px;
+    font-weight: 800;
+    text-align: center;
+    color: var(--ink);
+    background: var(--surface);
+    outline: none;
+}
+
+.discount-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(216, 91, 44, 0.14);
+}
+
+/* ========================================================================== 
+   12. CONTINENTAL WEBDEN FİYAT OKUMA DENEMESİ
+   ========================================================================== */
+.web-import-box {
+    margin-top: 16px;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--surface-soft);
+}
+
+.web-import-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--ink);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.web-import-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.web-import-row input {
+    height: 38px;
+    min-width: 190px;
+    padding: 8px 10px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: #fff;
+    font-size: 13px;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.web-import-row input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(99, 132, 156, 0.16);
+}
+
+.web-read-btn {
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 10px 18px;
+    font-weight: 800;
+    cursor: pointer;
+    color: #fff;
+    background: var(--accent-2);
+    transition: .2s;
+    font-family: inherit;
+}
+
+.web-read-btn:hover {
+    background: var(--accent-2-dark, #7a4d7d);
+}
+
+.web-import-box small {
+    display: block;
+    margin-top: 8px;
+    color: var(--ink-faint);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.price-stat.vat {
+    border-left: 4px solid var(--accent-2);
+}
+
+/* ==========================================================================
+   99. STOK HAREKETİ PANELİ
+   ========================================================================== */
+.stock-movement-box {
+    margin-top: 24px;
+    padding: 16px;
+    border: 1px solid #d9dee3;
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    text-align: left;
+}
+
+.stock-movement-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.stock-movement-head h2 {
+    margin: 0;
+    font-size: 18px;
+    color: #63849C;
+}
+
+.movement-date-filter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.movement-date-filter input {
+    width: 160px;
+    padding: 8px 10px;
+    border: 1px solid #cfd8dc;
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+}
+
+.movement-date-filter input:focus {
+    border-color: #63849C;
+    box-shadow: 0 0 0 2px rgba(99,132,156,0.16);
+}
+
+.movement-filter-btn,
+.movement-clear-btn {
+    border: none;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.movement-filter-btn {
+    background: #63849C;
+    color: #fff;
+}
+
+.movement-clear-btn {
+    background: #e9ecef;
+    color: #333;
+}
+
+.movement-table th,
+.movement-table td {
+    font-size: 13px;
+}
+
+.movement-clickable {
+    cursor: pointer;
+}
+
+.movement-clickable:hover {
+    background: #eef5f8 !important;
+}
+
+.movement-in {
+    color: #2E7D4F !important;
+    font-weight: 800;
+}
+
+.movement-out {
+    color: #B23A3A !important;
+    font-weight: 800;
+}
+
+/* ==========================================================================
+   10. YEDEK AYARLARI SAYFASI
+   ========================================================================== */
+.backup-settings-page {
+    max-width: 980px;
+    margin: 0 auto;
+    text-align: left;
+}
+
+.backup-card {
+    background: #ffffff;
+    border: 1px solid #e1e5e8;
+    border-radius: 14px;
+    box-shadow: 0 10px 28px rgba(0,0,0,0.07);
+    padding: 26px;
+    margin: 20px;
+}
+
+.backup-card h1 {
+    margin: 0 0 10px 0;
+    color: #63849C;
+    font-size: 24px;
+}
+
+.backup-desc {
+    color: #55524C;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 22px;
+}
+
+.backup-form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.backup-form-row label {
+    font-size: 12px;
+    color: #55524C;
+    font-weight: 800;
+    letter-spacing: .3px;
+    text-transform: uppercase;
+}
+
+.backup-form-row textarea {
+    width: 100%;
+    box-sizing: border-box;
+    resize: vertical;
+    min-height: 130px;
+    border: 1px solid #cfd8dc;
+    border-radius: 10px;
+    padding: 12px;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    outline: none;
+    background: #fbfcfd;
+}
+
+.backup-form-row textarea:focus {
+    border-color: #63849C;
+    box-shadow: 0 0 0 3px rgba(99,132,156,.16);
+    background: #ffffff;
+}
+
+.backup-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 18px;
+    flex-wrap: wrap;
+}
+
+.backup-save-btn,
+.backup-test-btn {
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-weight: 800;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.backup-save-btn {
+    background: #679C63;
+    color: #fff;
+}
+
+.backup-test-btn {
+    background: #63849C;
+    color: #fff;
+}
+
+.backup-msg {
+    display: none;
+    margin-top: 16px;
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 1.45;
+}

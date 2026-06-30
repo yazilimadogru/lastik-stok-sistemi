@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stok Kontrol Paneli</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <div class="stok-container-fluid">
+        <div class="stok-header">
+            <div class="stok-logo-box">
+                <img src="{{ url_for('static', filename='fotolar/logo.png') }}" class="stok-logo" alt="Dervişoğlu Otomotiv Logo">
+            </div>
+            <div class="header-actions">
+                <a href="{{ url_for('fiyat_listesi') }}" class="header-slip-btn">Fiyat Listesi</a>
+                <a href="{{ url_for('yedek_ayarlari') }}" class="header-slip-btn">Yedek Ayarı</a>
+                <a href="{{ url_for('cikis_fisi') }}" class="header-slip-btn">Çıkış Fişi</a>
+                <a href="{{ url_for('index') }}" class="header-back-btn logout-btn" onclick="return guvenliCikis(this)">Çıkış Yap</a>
+            </div>
+        </div>
+        
+        <div class="filter-panel">
+            
+            <div class="panel-column">
+                <div class="filter-group">
+                    <label>Marka</label>
+<div class="brand-select" data-input-id="brandInput">
+    <button type="button" class="brand-select-btn">
+        <span class="brand-selected">Tümü / marka seç...</span>
+        <span class="brand-arrow">⌄</span>
+    </button>
+    <div class="brand-menu">
+        <button type="button" data-value=""><span class="brand-logo-mini"><span class="brand-logo-fallback">✓</span></span><span>Hepsi</span></button>
+        <button type="button" data-value="Pirelli"><span class="brand-logo-mini"><img src="{{ url_for('static', filename='fotolar/markalar/pirelli.png') }}" alt="Pirelli" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"><span class="brand-logo-fallback">P</span></span><span>Pirelli</span></button>
+        <button type="button" data-value="Continental"><span class="brand-logo-mini"><img src="{{ url_for('static', filename='fotolar/markalar/continental.png') }}" alt="Continental" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"><span class="brand-logo-fallback">C</span></span><span>Continental</span></button>
+        <button type="button" data-value="Matador"><span class="brand-logo-mini"><img src="{{ url_for('static', filename='fotolar/markalar/matador.png') }}" alt="Matador" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"><span class="brand-logo-fallback">M</span></span><span>Matador</span></button>
+        <button type="button" data-value="Barum"><span class="brand-logo-mini"><img src="{{ url_for('static', filename='fotolar/markalar/barum.png') }}" alt="Barum" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"><span class="brand-logo-fallback">B</span></span><span>Barum</span></button>
+        <button type="button" data-value="Lassa"><span class="brand-logo-mini"><img src="{{ url_for('static', filename='fotolar/markalar/lassa.png') }}" alt="Lassa" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"><span class="brand-logo-fallback">L</span></span><span>Lassa</span></button>
+        <button type="button" data-value="Prometeon"><span class="brand-logo-mini"><img src="{{ url_for('static', filename='fotolar/markalar/prometeon.png') }}" alt="Prometeon" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"><span class="brand-logo-fallback">PR</span></span><span>Prometeon</span></button>
+        <button type="button" data-value="Anteo"><span class="brand-logo-mini"><img src="{{ url_for('static', filename='fotolar/markalar/anteo.png') }}" alt="Anteo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"><span class="brand-logo-fallback">A</span></span><span>Anteo</span></button>
+        <button type="button" data-value="Pharos"><span class="brand-logo-mini"><img src="{{ url_for('static', filename='fotolar/markalar/pharos.png') }}" alt="Pharos" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"><span class="brand-logo-fallback">PH</span></span><span>Pharos</span></button>
+        <button type="button" data-value="Goodyear"><span class="brand-logo-mini"><img src="{{ url_for('static', filename='fotolar/markalar/goodyear.png') }}" alt="Goodyear" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';"><span class="brand-logo-fallback">G</span></span><span>Goodyear</span></button>
+    </div>
+</div>
+<input type="hidden" id="brandInput" value="">
+                </div>
+                <div class="filter-group">
+                    <label>Ebat</label>
+                    <input type="text" id="sizeInput" placeholder="Örn: 2055516">
+                </div>
+            </div>
+
+            <div class="panel-column col-xs">
+                <div class="filter-group">
+                    <label>Mevsim</label>
+                    <select id="seasonSelect">
+                        <option value="">Tümü</option>
+                        <option value="Yaz">Yaz</option>
+                        <option value="Kış">Kış</option>
+                        <option value="4 Mev.">4 Mevsim</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Yıl</label>
+                    <input type="number" id="yearInput" class="no-spin" placeholder="2026">
+                </div>
+            </div>
+
+            <div class="panel-row-group">
+                <div class="panel-column">
+                    <div class="filter-group" style="min-width: 110px;">
+                        <label>Kod</label>
+                        <input type="text" id="codeInput" placeholder="Örn: P10234A" maxlength="10">
+                    </div>
+                    <div class="filter-group col-xs">
+                        <label>RF / SSR</label>
+                        <select id="rfSsrSelect">
+                            <option value="">Tümü</option>
+                            <option value="Var">Var</option>
+                            <option value="Yok">Yok</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-group btn-group">
+                    <label>&nbsp;</label>
+                    <button type="button" onclick="filterTable()" class="search-btn">Ara 🔍</button>
+                </div>
+            </div>
+
+            <div class="action-buttons-group">
+                <a href="{{ url_for('ekle') }}" class="action-btn add-btn">Ekle</a>
+                <button type="button" class="action-btn edit-btn" onclick="duzeltSeciliKayit()">Düzelt</button>
+                <button type="button" class="action-btn delete-btn" onclick="silSeciliKayit()">Sil</button>
+                <button type="button" class="action-btn backup-btn" onclick="manuelYedekAl()">Yedek Al</button>
+            </div>
+
+        </div>
+
+        <p id="date-error-msg" style="color: #B23A3A; font-size: 14px; font-weight: 600; text-align: left; margin: -10px 0 15px 20px; display: none;"></p>
+        <p id="info-msg" style="color: #55524C; font-size: 14px; font-weight: 600; text-align: left; margin: -10px 0 15px 20px; display: block;">Satır seçmek için tablodaki kayda tıkla. Düzenlemek ve hareketleri görmek için satıra çift tıkla.</p>
+
+        <table class="excel-table" id="stockTable">
+            <thead>
+                <tr>
+                    <th onclick="sortTable(0)" style="cursor:pointer;">Marka ↕</th>
+                    <th onclick="sortTable(1)" style="cursor:pointer;" class="center-col column-md">Kod ↕</th>
+                    <th onclick="sortTable(2)" style="cursor:pointer;">Desen ↕</th>
+                    <th onclick="sortTable(3)" style="cursor:pointer;">Ebat ↕</th>
+                    <th onclick="sortTable(4)" style="cursor:pointer;" class="center-col column-xs">Mevsim ↕</th>
+                    <th onclick="sortTable(5)" style="cursor:pointer;" class="center-col column-xs">Yıl ↕</th>
+                    <th onclick="sortTable(6)" style="cursor:pointer;">Depo ↕</th>
+                    <th onclick="sortTable(7)" style="cursor:pointer;" class="center-col column-xs">RF/SSR ↕</th>
+                    <th onclick="sortTable(8)" style="cursor:pointer;" class="right-col column-sm">Fiyat ↕</th>
+                    <th onclick="sortTable(9)" style="cursor:pointer;" class="center-col column-xs">Miktar ↕</th>
+                </tr>
+            </thead>
+            <tbody id="stockTableBody"></tbody>
+        </table>
+
+    </div>
+
+    <script>
+
+        function guvenliCikis(el) {
+            if (el.dataset.confirmed === '1') {
+                return true;
+            }
+            el.dataset.confirmed = '1';
+            el.textContent = 'Emin misiniz?';
+            el.classList.add('logout-confirm');
+            setTimeout(() => {
+                el.dataset.confirmed = '0';
+                el.textContent = 'Çıkış Yap';
+                el.classList.remove('logout-confirm');
+            }, 3000);
+            return false;
+        }
+
+        function initBrandSelects() {
+            function closeAll(except = null) {
+                document.querySelectorAll('.brand-select.open').forEach(select => {
+                    if (select !== except) select.classList.remove('open');
+                });
+            }
+
+            function positionMenu(select) {
+                const btn = select.querySelector('.brand-select-btn');
+                const menu = select.querySelector('.brand-menu');
+                const rect = btn.getBoundingClientRect();
+                const gap = 8;
+                const menuWidth = Math.max(rect.width, 270);
+
+                menu.style.width = menuWidth + 'px';
+                menu.style.left = Math.max(8, Math.min(rect.left, window.innerWidth - menuWidth - 8)) + 'px';
+                menu.style.top = (rect.bottom + gap) + 'px';
+            }
+
+            document.querySelectorAll('.brand-select').forEach(select => {
+                const input = document.getElementById(select.dataset.inputId);
+                const selected = select.querySelector('.brand-selected');
+                const btn = select.querySelector('.brand-select-btn');
+
+                if (input.value) selected.textContent = input.value;
+
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const willOpen = !select.classList.contains('open');
+                    closeAll(select);
+                    select.classList.toggle('open', willOpen);
+                    if (willOpen) positionMenu(select);
+                });
+
+                select.querySelectorAll('.brand-menu button').forEach(option => {
+                    option.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        input.value = option.dataset.value;
+                        selected.textContent = option.dataset.value || 'Tümü / marka seç...';
+                        select.classList.remove('open');
+                        if (input.id === 'brandInput') filterTable();
+                    });
+                });
+            });
+
+            window.addEventListener('scroll', () => {
+                document.querySelectorAll('.brand-select.open').forEach(positionMenu);
+            }, true);
+
+            window.addEventListener('resize', () => {
+                document.querySelectorAll('.brand-select.open').forEach(positionMenu);
+            });
+
+            document.addEventListener('click', () => closeAll());
+        }
+        let stokVerileri = [];
+        let seciliId = null;
+        let sortStates = {};
+
+        function formatTL(num) {
+            return Number(num || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' TL';
+        }
+
+
+        function tireDigits(value) {
+            return String(value || '').replace(/[^0-9]/g, '');
+        }
+
+        function normalizeTireSize(value) {
+            const digits = tireDigits(value);
+            if (digits.length >= 7) return digits.slice(0, 7);
+            return digits;
+        }
+
+        function formatTireSize(value) {
+            const raw = String(value || '').trim().toUpperCase();
+            const digits = tireDigits(raw);
+            if (digits.length >= 7) {
+                return `${digits.slice(0, 3)}/${digits.slice(3, 5)} R${digits.slice(5, 7)}`;
+            }
+            const match = raw.match(/(\d{3})\s*[\/\- ]?\s*(\d{2})\s*R?\s*(\d{1,2})/i);
+            if (match) {
+                return `${match[1]}/${match[2]} R${match[3].padStart(2, '0')}`;
+            }
+            return String(value || '').trim();
+        }
+
+        function applyTireSizeFormat(input) {
+            if (!input) return;
+            const formatted = formatTireSize(input.value);
+            if (formatted) input.value = formatted;
+        }
+
+        function bindTireSizeInput(inputId, afterFormat) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    applyTireSizeFormat(input);
+                    if (typeof afterFormat === 'function') afterFormat();
+                }
+            });
+            input.addEventListener('blur', function() {
+                applyTireSizeFormat(input);
+                if (typeof afterFormat === 'function') afterFormat();
+            });
+        }
+
+        function parseTurkishPrice(value) {
+            if (typeof value === 'number') return value;
+            const clean = String(value || '0').replace(/TL/gi, '').replace(/\./g, '').replace(',', '.').trim();
+            const num = parseFloat(clean);
+            return isNaN(num) ? 0 : num;
+        }
+
+        function mesajYaz(text, renk = '#55524C') {
+            const info = document.getElementById('info-msg');
+            info.textContent = text;
+            info.style.color = renk;
+            info.style.display = 'block';
+        }
+
+        function tabloyuYukle() {
+            fetch('/api/stok')
+                .then(res => res.json())
+                .then(veriler => {
+                    stokVerileri = veriler;
+                    seciliId = null;
+                    const tbody = document.querySelector('#stockTable tbody');
+                    tbody.innerHTML = '';
+
+                    if (veriler.length === 0) {
+                        mesajYaz('Stok listesi boş. Yeni kayıt eklemek için Ekle butonuna bas.');
+                        return;
+                    }
+
+                    veriler.forEach((item, index) => {
+                        const tr = document.createElement('tr');
+                        tr.setAttribute('data-index', index);
+                        tr.setAttribute('data-id', item.id);
+                        tr.innerHTML = `
+                            <td>${item.marka || ''}</td>
+                            <td class="center-col">${item.kod || ''}</td>
+                            <td>${item.desen || ''}</td>
+                            <td>${formatTireSize(item.ebat) || ''}</td>
+                            <td class="center-col">${item.mevsim || ''}</td>
+                            <td class="center-col">${item.yil || ''}</td>
+                            <td>${item.depo || ''}</td>
+                            <td class="center-col">${item.rf_ssr || 'x'}</td>
+                            <td class="right-col" data-val="${item.fiyat || 0}">${formatTL(item.fiyat)}</td>
+                            <td class="center-col">${item.miktar || 0}</td>
+                        `;
+                        tr.addEventListener('click', () => satirSec(tr, item.id));
+                        tr.addEventListener('dblclick', () => { window.location.href = `/duzenle/${item.id}`; });
+                        tbody.appendChild(tr);
+                    });
+
+                    mesajYaz('Satır seçmek için tablodaki kayda tıkla. Düzenlemek ve hareketleri görmek için satıra çift tıkla.');
+                })
+                .catch(() => mesajYaz('Stok verisi yüklenemedi!', '#B23A3A'));
+        }
+
+        function satirSec(tr, id) {
+            document.querySelectorAll('#stockTable tbody tr').forEach(row => row.classList.remove('selected-row'));
+            tr.classList.add('selected-row');
+            seciliId = Number(id);
+            mesajYaz('Seçili kayıt ID: ' + seciliId);
+        }
+
+        function seciliKaydiBul() {
+            return stokVerileri.find(item => Number(item.id) === Number(seciliId));
+        }
+
+        let silOnayBekleyenId = null;
+
+        function silSeciliKayit() {
+            const kayit = seciliKaydiBul();
+            if (!kayit) {
+                mesajYaz('Önce tablodan bir satır seçmelisin.', '#B23A3A');
+                return;
+            }
+
+            if (silOnayBekleyenId !== seciliId) {
+                silOnayBekleyenId = seciliId;
+                mesajYaz(`${kayit.marka || ''} ${formatTireSize(kayit.ebat) || ''} kod: ${kayit.kod || ''} silinecek. Eminsen Sil butonuna tekrar bas.`, '#B23A3A');
+
+                setTimeout(() => {
+                    if (silOnayBekleyenId === seciliId) {
+                        silOnayBekleyenId = null;
+                        mesajYaz('Silme onayı süresi doldu. Satırı seçip tekrar Sil’e basabilirsin.');
+                    }
+                }, 4000);
+                return;
+            }
+
+            fetch(`/api/stok/${seciliId}`, { method: 'DELETE' })
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.ok) throw new Error(data.hata || 'Silme hatası');
+                    silOnayBekleyenId = null;
+                    mesajYaz('Kayıt silindi. Silmeden önce otomatik yedek alındı.', '#2E7D4F');
+                    tabloyuYukle();
+                })
+                .catch(() => mesajYaz('Silme işlemi başarısız oldu!', '#B23A3A'));
+        }
+
+        function duzeltSeciliKayit() {
+            const kayit = seciliKaydiBul();
+            if (!kayit) {
+                mesajYaz('Önce tablodan bir satır seçmelisin.', '#B23A3A');
+                return;
+            }
+
+            window.location.href = `/duzenle/${seciliId}`;
+        }
+
+        function manuelYedekAl() {
+            fetch('/api/yedek-al', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    let ek = '';
+                    if (data.harici && data.harici.length) {
+                        const okSayisi = data.harici.filter(x => x.ok).length;
+                        ek = ' | Harici: ' + okSayisi + '/' + data.harici.length;
+                    }
+                    mesajYaz('Yedek alındı: ' + data.dosya + ek, '#2E7D4F');
+                })
+                .catch(() => mesajYaz('Yedek alınamadı!', '#B23A3A'));
+        }
+
+        function filterTable() {
+            const brandVal = document.getElementById("brandInput").value.toUpperCase().trim();
+            const codeVal = document.getElementById("codeInput").value.toUpperCase().trim();
+            const sizeVal = normalizeTireSize(document.getElementById("sizeInput").value);
+            const seasonVal = document.getElementById("seasonSelect").value;
+            const yearVal = document.getElementById("yearInput").value.trim();
+            const rfSsrVal = document.getElementById("rfSsrSelect").value;
+            const errorMsg = document.getElementById("date-error-msg");
+
+            if (yearVal !== "") {
+                const currentYear = new Date().getFullYear();
+                const parsedYear = parseInt(yearVal);
+                if (parsedYear < 2000 || parsedYear > currentYear) {
+                    errorMsg.textContent = "Lütfen Geçerli Bir Tarih Girin (2000 - " + currentYear + ")";
+                    errorMsg.style.display = "block";
+                    return; 
+                }
+            }
+            errorMsg.style.display = "none"; 
+
+            const rows = document.querySelectorAll("#stockTable tbody tr");
+
+            rows.forEach(row => {
+                const rowBrand = row.cells[0].textContent.toUpperCase().trim();
+                const rowCode = row.cells[1].textContent.toUpperCase().trim();
+                const rowSize = normalizeTireSize(row.cells[3].textContent); 
+                const rowSeason = row.cells[4].textContent.trim();
+                const rowYear = row.cells[5].textContent.trim();
+                const rowRfSsr = row.cells[7].textContent.trim();
+
+                const brandMatch = brandVal === "" || rowBrand.includes(brandVal);
+                const codeMatch = codeVal === "" || rowCode.includes(codeVal);
+                const sizeMatch = sizeVal === "" || rowSize.includes(sizeVal);
+                const seasonMatch = seasonVal === "" || rowSeason === seasonVal;
+                const yearMatch = yearVal === "" || rowYear === yearVal;
+                
+                let rfSsrMatch = true;
+                if (rfSsrVal === "Var") {
+                    rfSsrMatch = (rowRfSsr === "RF" || rowRfSsr === "SSR");
+                } else if (rfSsrVal === "Yok") {
+                    rfSsrMatch = (rowRfSsr === "x");
+                }
+
+                row.style.display = (brandMatch && codeMatch && sizeMatch && seasonMatch && yearMatch && rfSsrMatch) ? "" : "none";
+            });
+        }
+
+        function sortTable(colIndex) {
+            const table = document.getElementById("stockTable");
+            const tbody = table.querySelector("tbody");
+            const rows = Array.from(tbody.querySelectorAll("tr"));
+            
+            if (!sortStates[colIndex]) {
+                sortStates = {};
+                sortStates[colIndex] = 1; 
+            } else if (sortStates[colIndex] === 1) {
+                sortStates[colIndex] = 2; 
+            } else {
+                sortStates[colIndex] = 0; 
+            }
+
+            const state = sortStates[colIndex];
+
+            if (state === 0) {
+                rows.sort((a, b) => parseInt(a.getAttribute("data-index")) - parseInt(b.getAttribute("data-index")));
+            } else {
+                rows.sort((a, b) => {
+                    let cellA = a.cells[colIndex].textContent.trim();
+                    let cellB = b.cells[colIndex].textContent.trim();
+
+                    if (colIndex === 8) { 
+                        cellA = parseFloat(a.cells[colIndex].getAttribute("data-val")) || 0;
+                        cellB = parseFloat(b.cells[colIndex].getAttribute("data-val")) || 0;
+                    } else if (colIndex === 5 || colIndex === 9) { 
+                        cellA = parseInt(cellA) || 0;
+                        cellB = parseInt(cellB) || 0;
+                    }
+
+                    if (typeof cellA === "number" && typeof cellB === "number") {
+                        return state === 1 ? cellA - cellB : cellB - cellA;
+                    } else {
+                        return state === 1 ? cellA.localeCompare(cellB, 'tr') : cellB.localeCompare(cellA, 'tr');
+                    }
+                });
+            }
+
+            rows.forEach(row => tbody.appendChild(row));
+            updateHeaders(colIndex, state);
+        }
+
+        function updateHeaders(activeIndex, state) {
+            const headers = document.querySelectorAll("#stockTable th");
+            headers.forEach((th, idx) => {
+                let text = th.textContent.replace(/[↕▲▼]/g, "").trim();
+                if (idx === activeIndex) {
+                    if (state === 1) th.textContent = text + " ▲";
+                    else if (state === 2) th.textContent = text + " ▼";
+                    else th.textContent = text + " ↕";
+                } else {
+                    th.textContent = text + " ↕";
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            initBrandSelects();
+            bindTireSizeInput('sizeInput', filterTable);
+            tabloyuYukle();
+        });
+    </script>
+</body>
+</html>
